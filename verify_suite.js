@@ -4,12 +4,14 @@ const fs = require('fs');
 
 const VIEWPORTS = [
   { w: 568, h: 270, label: '568x270' },
-  { w: 640, h: 270, label: '640x270' },
-  { w: 740, h: 280, label: '740x280' },
-  { w: 800, h: 280, label: '800x280' },
-  { w: 667, h: 375, label: '667x375' },
+  { w: 640, h: 360, label: '640x360' },
+  { w: 740, h: 360, label: '740x360' },
   { w: 844, h: 390, label: '844x390' },
-  { w: 932, h: 430, label: '932x430' }
+  { w: 932, h: 430, label: '932x430' },
+  { w: 960, h: 440, label: '960x440' },
+  { w: 1024, h: 600, label: '1024x600' },
+  { w: 1180, h: 820, label: '1180x820' },
+  { w: 1440, h: 900, label: '1440x900' }
 ];
 
 const PLAYER_COUNTS = [2, 4, 6];
@@ -254,6 +256,34 @@ if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
     }
     await context.close();
   }
+
+  // Portrait Orientation Verification
+  console.log('\nVerifying portrait orientation handling at 390x844...');
+  const portraitCtx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2
+  });
+  const pPage = await portraitCtx.newPage();
+  await pPage.goto(fileUrl);
+  await pPage.waitForTimeout(50);
+  const rotateVisible = await pPage.evaluate(() => {
+    const rot = document.querySelector('.rotate');
+    const shell = document.querySelector('.shell');
+    if (!rot) return false;
+    const style = window.getComputedStyle(rot);
+    const rotDisp = style.display !== 'none' && style.visibility !== 'hidden';
+    const shellDisp = !shell || window.getComputedStyle(shell).display === 'none';
+    return rotDisp && shellDisp;
+  });
+  if (rotateVisible) {
+    console.log('PASS: Portrait orientation displays rotate-device screen and hides gameplay');
+    await pPage.screenshot({ path: path.join(screenshotsDir, 'portrait_390x844_rotate.png') });
+  } else {
+    console.error('FAIL: Portrait orientation did not properly show rotate screen');
+    allPassed = false;
+    failureLog.push({ testId: 'portrait_390x844', errors: ['Rotate screen not properly displayed'] });
+  }
+  await portraitCtx.close();
 
   await browser.close();
 

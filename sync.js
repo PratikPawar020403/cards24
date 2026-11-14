@@ -14,7 +14,17 @@ const html = `<!doctype html><html><head><meta charset=utf8><meta name=viewport 
 ${css}
 </style>
 <div id="app"></div>
-<div class="rotate" role="alert"><div class="phone"></div><b style="font-family:var(--font-display);font-size:22px;color:var(--gold-2);font-weight:400">Turn your phone sideways</b><span style="color:var(--muted)">Rummy Room is built for landscape.</span></div>
+<div class="rotate" role="alert">
+  <div class="rotate-glow"></div>
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="phone-mini-cards"><span>🂡</span><span>🂮</span><span>🂫</span></div>
+    </div>
+  </div>
+  <h2 class="rotate-title">Rotate your device</h2>
+  <p class="rotate-sub">For the best Rummy experience, please turn your phone sideways.</p>
+</div>
 <script>
 ${logic}
 </script>

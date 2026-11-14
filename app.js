@@ -640,8 +640,13 @@
     var sym = L.SUIT_SYM[c.suit] + '︎';
     return '<div class="' + cls + '" data-card="' + id + '"><span class="tl">' + L.RANK_LBL[c.rank] + '<b>' + sym + '</b></span><span class="mid">' + sym + '</span></div>';
   }
-  var TAGS = ['Loose', 'Set', 'Sequence', 'Pure sequence'];
-  function tagFor(g) { if (g.length < 3) return [0, 'Loose']; var t = L.classify(g, S.wild); return [t, t ? TAGS[t] : 'Not a meld']; }
+  var TAGS = ['Loose', 'Set', 'Sequence', 'Pure'];
+  function tagFor(g) {
+    if (g.length <= 1) return null;
+    if (g.length === 2) return [0, 'Loose'];
+    var t = L.classify(g, S.wild);
+    return [t, t ? TAGS[t] : 'Invalid'];
+  }
 
   function handStats(hand) {
     var pure = 0, seqs = 0, groups = layout.map(function (g) { return { g: g, t: g.length >= 3 ? L.classify(g, S.wild) : 0 }; });
@@ -862,8 +867,9 @@
       var moveMode = selList.length > 0;
       handHTML = layout.map(function (g, gi) {
         var t = tagFor(g), anySel = g.some(function (id) { return sel[id]; });
+        var tagHTML = t ? '<span class="group-meld-tag t' + t[0] + '">' + t[1] + '</span>' : '';
         return '<div class="group' + (moveMode && !anySel ? ' target' : '') + '" data-g="' + gi + '">' +
-          '<span class="group-meld-tag t' + t[0] + '">' + t[1] + '</span>' +
+          tagHTML +
           '<div class="cards">' +
             g.map(function (id) { return cardHTML(id, sel[id] ? 'sel' : ''); }).join('') +
           '</div>' +
