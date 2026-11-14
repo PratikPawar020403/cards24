@@ -213,7 +213,7 @@
   /* ================= session ================= */
   var db = null, offline = false, me = { uid: null, name: '' };
   var code = null, room = null, players = {}, S = null, unsubs = [];
-  var sel = {}, layout = [], layoutKey = '', dismissed = '', rulesOpen = false, scoresOpen = false, confirmDrop = false, reactOpen = false;
+  var sel = {}, layout = [], layoutKey = '', dismissed = '', rulesOpen = false, scoresOpen = false, confirmDrop = false, reactOpen = false, menuOpen = false;
   var felt = lsGet('rr-felt') || 'emerald', lastTurnKey = '', botTimer = null, botKey = '', seenReact = {}, wq = Promise.resolve();
   var evCache = { key: '', ev: null }, playersSig = '', hb = null;
   var titleTimer = null, origTitle = 'Rummy Room', wasMineTurn = false;
@@ -679,6 +679,72 @@
   }
   function cardName(id) { var c = L.INFO[id]; return c.joker ? 'a Joker' : L.RANK_LBL[c.rank] + L.SUIT_SYM[c.suit] + '︎'; }
 
+  function seatChipHTML(u) {
+    var p = players[u] || { uid: u, name: pname(u) };
+    var st = S.status[u], n = (S.hands[u] || []).length;
+    var totals = (S.result ? S.result.totals : S.baseTotals) || {};
+    var tot = totals[u] || 0;
+    var isTurn = S.phase === 'play' && S.turn === u && st === 'active';
+    var isBot = !!(p && p.bot);
+    var rawName = (p.name || 'Player').replace(/\s*\(bot\)/i, '').trim();
+    var shortName = rawName.length > 7 ? rawName.slice(0, 7) + '…' : rawName;
+    var isAway = p && !online(p);
+
+    var cls = 'seat-chip';
+    if (isTurn) cls += ' turn';
+    if (st !== 'active') cls += ' out';
+    if (isAway) cls += ' away';
+
+    var skipBtn = isHost() && isTurn && !isBot
+      ? '<button class="btn small danger kick" data-a="kick" data-u="' + esc(u) + '" title="Skip">✕</button>'
+      : '';
+
+    return '<div class="' + cls + '" data-u="' + esc(u) + '">' +
+      '<div class="chip-avatar-wrap">' + avatar(u) + '</div>' +
+      '<div class="chip-body">' +
+        '<div class="chip-row1">' +
+          '<span class="chip-name">' + esc(shortName) + '</span>' +
+          (isBot ? '<span class="bot-glyph" title="Bot">🤖</span>' : '') +
+          skipBtn +
+        '</div>' +
+        '<div class="chip-row2">' +
+          (st === 'active' ? '<span class="chip-cards">🂠<span class="chip-cards-cnt">' + n + '</span></span>' : '<span class="pill bad" style="font-size:9px;padding:0 3px">Out</span>') +
+          '<span class="chip-pts">· ' + tot + 'p</span>' +
+          (isTurn ? '<span class="chip-timer" id="timer"></span>' : '') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function fitHand() {
+    var handEl = document.getElementById('hand');
+    if (!handEl) return;
+    var cards = handEl.querySelectorAll('.card');
+    if (!cards.length) return;
+    var cw = cards[0].getBoundingClientRect().width || 48;
+    var groups = handEl.querySelectorAll('.group');
+    var G = groups.length || 1;
+    var N = cards.length;
+    var totalOverlaps = N - G;
+    if (totalOverlaps <= 0) {
+      handEl.style.setProperty('--card-overlap', '0px');
+      return;
+    }
+    var availW = handEl.clientWidth - 16;
+    var totalNoOverlap = N * cw + (G - 1) * 6;
+    if (totalNoOverlap <= availW) {
+      var comfortable = -Math.min(18, Math.max(8, Math.round(cw * 0.35)));
+      handEl.style.setProperty('--card-overlap', comfortable + 'px');
+      return;
+    }
+    var neededNegative = totalNoOverlap - availW;
+    var overlap = - (neededNegative / totalOverlaps);
+    /* Enforce tap strip >= 28px: strip = cw + overlap >= 28 => overlap >= -(cw - 28) */
+    var maxNegativeOverlap = -(cw - 28);
+    var chosenOverlap = Math.max(maxNegativeOverlap, overlap);
+    handEl.style.setProperty('--card-overlap', chosenOverlap.toFixed(1) + 'px');
+  }
+
   function renderTable() {
     var inGame = S.order.indexOf(me.uid) >= 0, active = inGame && S.status[me.uid] === 'active';
     var mineTurn = S.phase === 'play' && S.turn === me.uid && active;
@@ -690,42 +756,41 @@
     var declCard = null;
     if (sugg.length) { declCard = pickSel != null && sugg.some(function (e) { return e.id === pickSel; }) ? pickSel : sugg[0].id; }
 
-    /* seats around the round table:
-       0: Left flank (9:00 o'clock)
-       1: Top-Left (10:30 o'clock)
-       2: Top-Right (1:30 o'clock)
-       3: Right flank (3:00 o'clock)
-       4: Bottom-Right (4:30 o'clock)
-       5: Bottom-Left (7:30 o'clock)
+    /* Opponents seating around CSS grid table:
+       Up to 3 along top rim (rimLeft, rimRight).
+       4th and 5th in flankLeft and flankRight only.
     */
-    var SLOTS = [
-      [8, 38],   /* 0: Left flank */
-      [20, 10],  /* 1: Top-Left */
-      [80, 10],  /* 2: Top-Right */
-      [92, 38],  /* 3: Right flank */
-      [90, 62],  /* 4: Bottom-Right */
-      [10, 62]   /* 5: Bottom-Left */
-    ];
-    var SETS = {
-      0: [],
-      1: [2],
-      2: [0, 3],
-      3: [0, 1, 3],
-      4: [0, 1, 2, 3],
-      5: [5, 0, 1, 2, 3],
-      6: [5, 0, 1, 2, 3, 4]
-    };
-    var mIdx = S.order.indexOf(me.uid), seatSeq = mIdx < 0 ? S.order.slice() : S.order.slice(mIdx + 1).concat(S.order.slice(0, mIdx));
-    var slotIdx = SETS[Math.min(seatSeq.length, 6)] || [], totals = (S.result ? S.result.totals : S.baseTotals) || {};
-    var opps = seatSeq.map(function (u, k) {
-      var sIdx = slotIdx[k] != null ? slotIdx[k] : (k % SLOTS.length);
-      var st = S.status[u], n = (S.hands[u] || []).length, tot = totals[u] || 0, pos = SLOTS[sIdx];
-      var isTurn = S.phase === 'play' && S.turn === u && st === 'active';
-      return '<div class="opp seat-pos-' + sIdx + (isTurn ? ' turn' : '') + (st !== 'active' ? ' out' : '') + '" data-u="' + esc(u) + '" style="left:' + pos[0] + '%;top:' + pos[1] + '%">' + avatar(u) +
-        '<div class="nm">' + esc(pname(u)) + '</div><div class="meta">' + (st === 'active' ? '<span class="mini-fan">' + fanHTML(n) + '</span><span class="cnt">' + n + '</span>' : '<span class="pill bad">Dropped +' + S.dropPts[u] + '</span>') + '<span class="tot">· ' + tot + ' pts</span>' + (players[u] && !online(players[u]) ? '<span class="pill bad">Away</span>' : '') + (isTurn ? '<span id="timer" class="pill gold"></span>' : '') + '</div>' +
-        (isHost() && isTurn && !(players[u] && players[u].bot) ? '<button class="btn small danger kick" data-a="kick" data-u="' + esc(u) + '" title="Drop this player">Skip</button>' : '') + '</div>';
-    }).join('');
+    var mIdx = S.order.indexOf(me.uid);
+    var seatSeq = mIdx < 0 ? S.order.slice() : S.order.slice(mIdx + 1).concat(S.order.slice(0, mIdx));
+    var rimLeftOpps = [], rimRightOpps = [], flankLeftOpp = null, flankRightOpp = null;
+    if (seatSeq.length === 1) {
+      rimLeftOpps = [seatSeq[0]];
+    } else if (seatSeq.length === 2) {
+      rimLeftOpps = [seatSeq[0]];
+      rimRightOpps = [seatSeq[1]];
+    } else if (seatSeq.length === 3) {
+      rimLeftOpps = [seatSeq[0]];
+      rimRightOpps = [seatSeq[1], seatSeq[2]];
+    } else if (seatSeq.length === 4) {
+      flankLeftOpp = seatSeq[0];
+      rimLeftOpps = [seatSeq[1]];
+      rimRightOpps = [seatSeq[2], seatSeq[3]];
+    } else if (seatSeq.length >= 5) {
+      flankLeftOpp = seatSeq[0];
+      rimLeftOpps = [seatSeq[1]];
+      rimRightOpps = [seatSeq[2], seatSeq[3]];
+      flankRightOpp = seatSeq[4];
+    }
+
+    var rimLeftHTML = rimLeftOpps.map(seatChipHTML).join('');
+    var rimRightHTML = rimRightOpps.map(seatChipHTML).join('');
+    var flankLeftHTML = flankLeftOpp ? seatChipHTML(flankLeftOpp) : '';
+    var flankRightHTML = flankRightOpp ? seatChipHTML(flankRightOpp) : '';
+
+    var totals = (S.result ? S.result.totals : S.baseTotals) || {};
     var myTot = totals[me.uid] || 0;
+    var myRawName = (me.name || 'You').replace(/\s*\(bot\)/i, '').trim();
+    var myShortName = myRawName.length > 7 ? myRawName.slice(0, 7) + '…' : myRawName;
 
     /* piles */
     var top = S.discard[S.discard.length - 1];
@@ -740,38 +805,47 @@
       var moveMode = selList.length > 0;
       handHTML = layout.map(function (g, gi) {
         var t = tagFor(g), anySel = g.some(function (id) { return sel[id]; });
-        return '<div class="group' + (moveMode && !anySel ? ' target' : '') + '" data-g="' + gi + '"><div class="cards">' +
-          g.map(function (id) { return cardHTML(id, sel[id] ? 'sel' : ''); }).join('') + '</div><span class="tag t' + t[0] + '">' + t[1] + '</span></div>';
+        return '<div class="group' + (moveMode && !anySel ? ' target' : '') + '" data-g="' + gi + '">' +
+          '<span class="group-meld-tag t' + t[0] + '">' + t[1] + '</span>' +
+          '<div class="cards">' +
+            g.map(function (id) { return cardHTML(id, sel[id] ? 'sel' : ''); }).join('') +
+          '</div>' +
+        '</div>';
       }).join('');
-    } else handHTML = '<div class="hand-empty">' + (inGame ? 'You dropped this deal.' : 'You are watching this deal.') + '</div>';
-
-    /* rail */
-    var rail = inGame ? '<div class="me' + (mineTurn ? ' turn' : '') + '" data-seat="' + esc(me.uid) + '">' + avatar(me.uid) + '<div class="si"><div class="nm">' + esc(me.name) + '</div><div class="meta">' + myTot + ' pts</div></div></div>' : '';
-    if (inGame && active && S.phase === 'play') {
-      rail +=
-        '<div class="check"><div><span>Pure sequence</span><b class="' + (stats.pure ? 'ok' : 'no') + '">' + Math.min(stats.pure, 1) + '/1</b></div>' +
-        '<div><span>Sequences</span><b class="' + (stats.seqs >= 2 ? 'ok' : 'no') + '">' + Math.min(stats.seqs, 2) + '/2</b></div>' +
-        '<div><span>Deadwood</span><b>' + stats.dead + '</b></div></div>' +
-        '<button class="btn gold' + (declCard != null ? ' suggest' : '') + '" data-a="declare" ' + (mineTurn && S.stage === 'discard' ? '' : 'disabled') + '>' + (declCard != null ? 'Declare (' + cardName(declCard) + ' to Finish)' : 'Declare') + '</button>' +
-        '<button class="btn" data-a="discard" ' + (mineTurn && S.stage === 'discard' && pickSel != null ? '' : 'disabled') + '>Discard</button>' +
-        '<div class="row" style="gap:6px"><button class="btn small grow" data-a="group" ' + (selList.length ? '' : 'disabled') + '>Group</button><button class="btn small grow" data-a="sort">Sort</button></div>' +
-        '<button class="btn small" data-a="auto">Smart arrange</button>' +
-        '<button class="btn small danger" data-a="drop" ' + (mineTurn && S.stage === 'draw' ? '' : 'disabled') + '>' + (confirmDrop ? 'Confirm drop (+' + (S.draws[me.uid] === 0 ? 20 : 40) + ')' : 'Drop') + '</button>';
+    } else {
+      handHTML = '<div class="hand-empty">' + (inGame ? 'You dropped this deal.' : 'You are watching this deal.') + '</div>';
     }
-    rail += '<div class="log">' + S.log.slice(-5).map(function (e) { return '<div>' + logText(e) + '</div>'; }).join('') + '</div>';
+
+    /* compact action rail */
+    var meChip = inGame ? '<div class="me' + (mineTurn ? ' turn' : '') + '" data-seat="' + esc(me.uid) + '">' +
+      avatar(me.uid) +
+      '<div class="me-info"><div class="me-nm">' + esc(myShortName) + '</div><div class="me-pts">' + myTot + ' pts</div></div>' +
+      '</div>' : '';
+
+    var actionGrid = '';
+    if (inGame && active && S.phase === 'play') {
+      actionGrid = '<div class="action-grid">' +
+        '<button class="btn gold btn-declare' + (declCard != null ? ' suggest' : '') + '" data-a="declare" ' + (mineTurn && S.stage === 'discard' ? '' : 'disabled') + '>' +
+          (declCard != null ? 'Declare (' + cardName(declCard) + ')' : 'Declare') +
+        '</button>' +
+        '<button class="btn" data-a="discard" ' + (mineTurn && S.stage === 'discard' && pickSel != null ? '' : 'disabled') + '>Discard</button>' +
+        '<button class="btn danger" data-a="drop" ' + (mineTurn && S.stage === 'draw' ? '' : 'disabled') + '>' + (confirmDrop ? 'Confirm' : 'Drop') + '</button>' +
+        '<button class="btn" data-a="group" ' + (selList.length ? '' : 'disabled') + '>Group</button>' +
+        '<button class="btn" data-a="sort">Sort</button>' +
+      '</div>';
+    } else if (inGame && !active) {
+      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button><button class="btn" disabled>Dropped</button></div>';
+    } else {
+      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button></div>';
+    }
+
+    var rail = '<aside class="rail">' + meChip + actionGrid + '</aside>';
 
     var canFinish = mineTurn && S.stage === 'discard';
     var finishHTML = '<div class="pile finish-pile' + (canFinish ? ' actionable' : '') + '" data-a="finish" title="Finish Slot: Drop 14th card here to declare">' +
       '<div class="finish-slot-card' + (S.finish != null ? ' has-card' : '') + '">' +
       (S.finish != null ? cardHTML(S.finish) : '<div class="finish-inner"><span class="finish-ico">🏁</span><span class="finish-label">FINISH</span></div>') +
       '</div><span class="lbl">Declare Slot</span></div>';
-
-    var centerHTML = '<div class="center"><div class="prow">' +
-      '<div class="pile' + (canStock ? ' actionable' : '') + '" data-a="stock"><div class="stack"><div class="back"></div><div class="back"></div><div class="back"></div></div><span class="lbl">Stock ' + S.stock.length + '</span></div>' +
-      '<div class="pile' + (canPick ? ' actionable' : '') + '" data-a="pickup">' + (top !== undefined ? cardHTML(top) : '<div class="card" style="opacity:.2"></div>') + '<span class="lbl">Open' + (canStock && topWild ? ' (joker)' : '') + '</span></div>' +
-      '<div class="wildbox"><div class="cardwrap">' + cardHTML(S.cut) + '</div><span class="lbl pile" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)">Wild ' + (S.wild === 1 && L.INFO[S.cut].joker ? 'A' : L.RANK_LBL[S.wild]) + '</span></div>' +
-      finishHTML +
-      '</div><div class="msg' + (mineTurn ? ' mine' : '') + '">' + esc(msg[0]) + '<small>' + esc(msg[1]) + '</small>' + (mineTurn ? '<span id="timer" class="pill gold" style="margin-top:4px"></span>' : '') + '</div></div>';
 
     var leaveModalHTML = leaveModalOpen ?
       '<div class="modal" data-a="cancelleave"><div class="sheet" style="max-width:380px;text-align:center;">' +
@@ -793,17 +867,71 @@
       '<button class="btn danger" data-a="confirmwrong" style="min-width:140px;">Declare (-80 Pts)</button>' +
       '</div></div></div>' : '';
 
-    var html =
-      '<div class="shell"><div class="bar"><span class="title">Rummy Room</span><span class="pill">Room ' + esc(code) + '</span><span class="pill">Deal ' + (S.round + 1) + '</span>' +
-      '<span class="pill gold">' + L.MODES[S.mode].label + '</span><span class="grow"></span>' +
-      '<button class="btn icon-btn" data-a="react" aria-label="Reactions">😀</button>' +
-      '<button class="btn icon-btn" data-a="felt" aria-label="Change table colour" title="Table colour">◐</button>' +
-      '<button class="btn icon-btn" data-a="mute" aria-label="Sound" title="Sound">' + (muted ? '🔇' : '🔊') + '</button>' +
-      '<button class="btn small" data-a="scores">Scores</button><button class="btn small ghost" data-a="rules">Rules</button><button class="btn small ghost" data-a="leave">Leave</button></div>' +
+    var menuModalHTML = menuOpen ?
+      '<div class="modal" data-a="closemenu"><div class="sheet menu-sheet">' +
+      '<div class="menu-head"><h3>Table Menu</h3><button class="btn icon-btn small ghost" data-a="closemenu">✕</button></div>' +
+      '<div class="menu-buttons">' +
+      '<button class="btn" data-a="scores">📊 Scores</button>' +
+      '<button class="btn" data-a="rules">📖 How to Play</button>' +
+      '<button class="btn" data-a="felt">◐ Felt Color (' + felt + ')</button>' +
+      '<button class="btn" data-a="mute">' + (muted ? '🔇 Unmute Sound' : '🔊 Mute Sound') + '</button>' +
+      '<button class="btn danger" data-a="leave">🚪 Leave Table</button>' +
+      '</div></div></div>' : '';
+
+    var topBarHTML =
+      '<div class="bar">' +
+        '<div class="bar-left">' +
+          '<button class="pill gold pill-btn" data-a="copy" title="Tap to copy invite link">Room ' + esc(code) + '</button>' +
+          '<span class="pill">Deal ' + (S.round + 1) + '</span>' +
+          '<span class="pill gold">' + L.MODES[S.mode].label + '</span>' +
+        '</div>' +
+        '<div class="bar-right">' +
+          '<button class="btn icon-btn" data-a="react" aria-label="Reactions" title="Reactions">😀</button>' +
+          '<button class="btn icon-btn" data-a="menu" aria-label="Menu" title="Menu">☰</button>' +
+        '</div>' +
+      '</div>';
+
+    var feltHTML =
       '<main class="felt" data-felt="' + felt + '">' +
-      dealerHTML() + opps + centerHTML +
-      '<div class="hand" id="hand">' + handHTML + '</div></main>' +
-      '<aside class="rail">' + rail + '</aside></div>' +
+        '<div class="top-rim">' +
+          '<div class="rim-seat-left">' + rimLeftHTML + '</div>' +
+          '<div class="dealer-cell" data-a="dealer" title="Tap the dealer" role="img" aria-label="Dealer">' +
+            '<picture><source srcset="dealer.webp" type="image/webp"><img src="dealer.png" alt="Dealer" class="dealer-img" draggable="false" onerror="this.src=\'dealer.jpg\'" /></picture>' +
+            '<div class="dealer-nametag">DEALER</div>' +
+            (dealerBubble && (Date.now() - dealerBubble.t < 2500) ? '<div class="dealer-bubble" id="bubble">' + esc(dealerBubble.text) + '</div>' : '') +
+          '</div>' +
+          '<div class="rim-seat-right">' + rimRightHTML + '</div>' +
+        '</div>' +
+        '<div class="flank-left">' + flankLeftHTML + '</div>' +
+        '<div class="center-core">' +
+          '<div class="status-lane"><span class="status-msg ' + (mineTurn ? 'mine' : '') + '">' + esc(msg[0]) + (msg[1] ? ' · ' + esc(msg[1]) : '') + '</span>' + (mineTurn ? '<span id="timer" class="status-timer"></span>' : '') + '</div>' +
+          '<div class="piles-lane">' +
+            '<div class="pile' + (canStock ? ' actionable' : '') + '" data-a="stock"><div class="stack"><div class="back"></div><div class="back"></div><div class="back"></div></div><span class="lbl">Stock ' + S.stock.length + '</span></div>' +
+            '<div class="pile' + (canPick ? ' actionable' : '') + '" data-a="pickup">' + (top !== undefined ? cardHTML(top) : '<div class="card" style="opacity:.2"></div>') + '<span class="lbl">Open' + (canStock && topWild ? ' (joker)' : '') + '</span></div>' +
+            '<div class="wildbox"><div class="cardwrap">' + cardHTML(S.cut) + '</div><span class="lbl">Wild ' + (S.wild === 1 && L.INFO[S.cut].joker ? 'A' : L.RANK_LBL[S.wild]) + '</span></div>' +
+            finishHTML +
+          '</div>' +
+        '</div>' +
+        '<div class="flank-right">' + flankRightHTML + '</div>' +
+        '<div class="hand-lane">' +
+          '<div class="meld-pills">' +
+            '<span class="mpill ' + (stats.pure ? 'ok' : 'no') + '">Pure ' + Math.min(stats.pure, 1) + '/1</span>' +
+            '<span class="mpill ' + (stats.seqs >= 2 ? 'ok' : 'no') + '">Seq ' + Math.min(stats.seqs, 2) + '/2</span>' +
+            '<span class="mpill">Dead ' + stats.dead + '</span>' +
+          '</div>' +
+          '<div class="hand-cards" id="hand">' + handHTML + '</div>' +
+        '</div>' +
+      '</main>';
+
+    var html =
+      '<div class="shell">' +
+        topBarHTML +
+        '<div class="table-area">' +
+          feltHTML +
+          rail +
+        '</div>' +
+      '</div>' +
+      menuModalHTML +
       (reactOpen ? '<div class="modal" data-a="closereact"><div class="sheet" style="width:auto"><div class="emoji-row">' + ['👏', '🔥', '😅', '👑', '♠️', '🎉'].map(function (e) { return '<button data-a="emoji" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div></div></div>' : '') +
       (S.phase === 'ended' && dismissed !== S.round + ':' + (S.result.winner) ? resultHTML() : '') +
       (scoresOpen ? scoresHTML() : '') + (rulesOpen ? rulesHTML() : '') + leaveModalHTML + wrongModalHTML;
@@ -901,11 +1029,10 @@
   }
   function dealerSay(text) {
     dealerBubble = { text: text, t: Date.now() };
-    var d = document.querySelector('.dealer'); if (!d) return;
-    var b = d.querySelector('.bubble');
-    if (!b) { b = document.createElement('div'); b.className = 'bubble'; b.id = 'bubble'; d.appendChild(b); }
-    b.textContent = text; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; b.style.animationDelay = '0s';
-    d.classList.add('talk'); setTimeout(function () { d.classList.remove('talk'); }, 1800);
+    var d = document.querySelector('.dealer-cell, .dealer'); if (!d) return;
+    var b = d.querySelector('.dealer-bubble, .bubble');
+    if (!b) { b = document.createElement('div'); b.className = d.classList.contains('dealer-home') ? 'bubble' : 'dealer-bubble'; b.id = 'bubble'; d.appendChild(b); }
+    b.textContent = text;
     clearTimeout(bubbleTimer);
     bubbleTimer = setTimeout(function () {
       var x = document.getElementById('bubble');
@@ -917,7 +1044,7 @@
         }
       }
       dealerBubble = null;
-    }, 4500);
+    }, 2500);
   }
   function wildLabel() { return S.wild === 1 && L.INFO[S.cut].joker ? 'Ace' : L.RANK_LBL[S.wild]; }
 
@@ -1003,10 +1130,10 @@
       }
     } catch (e) { /* animation is cosmetic */ }
   }
-  function chipFor(u) { var all = document.querySelectorAll('.opp'); for (var i = 0; i < all.length; i++) if (all[i].dataset.u === u) return all[i]; return null; }
+  function chipFor(u) { var all = document.querySelectorAll('.seat-chip, .opp'); for (var i = 0; i < all.length; i++) if (all[i].dataset.u === u) return all[i]; return null; }
   function fanHTML(n) { var h = ''; for (var i = 0; i < Math.min(n, 6); i++) h += '<i></i>'; return h; }
-  function setSeatCount(u, n) { var chip = chipFor(u); if (!chip) return; var c = chip.querySelector('.cnt'), fan = chip.querySelector('.mini-fan'); if (c) c.textContent = n; if (fan) fan.innerHTML = fanHTML(n); }
-  function seatTarget(u) { var chip = chipFor(u); if (!chip) return null; var fan = chip.querySelector('.mini-fan'); return (fan || chip).getBoundingClientRect(); }
+  function setSeatCount(u, n) { var chip = chipFor(u); if (!chip) return; var c = chip.querySelector('.chip-cards-cnt, .cnt'), fan = chip.querySelector('.mini-fan'); if (c) c.textContent = n; if (fan) fan.innerHTML = fanHTML(n); }
+  function seatTarget(u) { var chip = chipFor(u); if (!chip) return null; var fan = chip.querySelector('.chip-avatar-wrap, .mini-fan, .avatar'); return (fan || chip).getBoundingClientRect(); }
   function remoteFlights() {
     var e = S.last; if (!e || e.u === me.uid) return;
     var to = seatTarget(e.u); if (!to) return;
@@ -1018,7 +1145,7 @@
   var dealUntil = 0;
   function animateDeal() {
     if (reduced) return;
-    var dealerEl = document.querySelector('.felt > .dealer'), sr = rectOf('.pile[data-a=stock] .stack');
+    var dealerEl = document.querySelector('.dealer-cell, .felt > .dealer'), sr = rectOf('.pile[data-a=stock] .stack');
     if (!dealerEl || !sr) return;
     var dr = dealerEl.getBoundingClientRect(), origin = { left: dr.left + dr.width * .66, top: dr.top + dr.height * .74, width: 0, height: 0 };
     var si = S.order.indexOf(S.turn), seq = si < 0 ? S.order.slice() : S.order.slice(si).concat(S.order.slice(0, si)), n = seq.length;
@@ -1078,6 +1205,7 @@
     else if (S.stock.length === 8 && e.a === 'stock') dealerSay('Only a few cards left in the stock.');
   }
   function postRender() {
+    fitHand();
     var dk = S.round + ':' + S.startedAt, fresh = lastAnimV === null, changed = S.v !== lastAnimV;
     var newDeal = S.phase === 'play' && S.turnN === 0 && !S.last && dk !== lastDealKey && Math.abs(Date.now() - S.startedAt) < 10000;
     if (newDeal) {
@@ -1194,9 +1322,11 @@
       case 'create': createRoom(); break;
       case 'join': joinRoom(document.getElementById('jc').value); break;
       case 'resume': document.getElementById('jc').value = t.dataset.code; joinRoom(t.dataset.code); break;
-      case 'rules': rulesOpen = true; rerender(); break;
+      case 'menu': menuOpen = true; renderRoom(); break;
+      case 'closemenu': menuOpen = false; renderRoom(); break;
+      case 'rules': menuOpen = false; rulesOpen = true; rerender(); break;
       case 'closerules': rulesOpen = false; rerender(); break;
-      case 'scores': scoresOpen = true; renderRoom(); break;
+      case 'scores': menuOpen = false; scoresOpen = true; renderRoom(); break;
       case 'closescores': scoresOpen = false; renderRoom(); break;
       case 'copy':
         var shareUrl = location.origin + location.pathname + '#r-' + code;
@@ -1209,7 +1339,7 @@
           toast('Room: ' + code, true);
         }
         break;
-      case 'leave': leaveRoom(); break;
+      case 'leave': menuOpen = false; leaveRoom(); break;
       case 'addbot': addBot(); break;
       case 'remove': removePlayer(t.dataset.u); break;
       case 'mode': setRoom({ mode: t.dataset.m }); break;
@@ -1278,9 +1408,29 @@
   document.addEventListener('change', function (ev) { if (ev.target.dataset && ev.target.dataset.a === 'timer') setRoom({ turnSecs: +ev.target.value }); });
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Enter' && ev.target.id === 'jc') joinRoom(ev.target.value);
-    if (ev.key === 'Escape') { rulesOpen = false; scoresOpen = false; reactOpen = false; if (code) renderRoom(); else rerender(); }
+    if (ev.key === 'Escape') { menuOpen = false; rulesOpen = false; scoresOpen = false; reactOpen = false; if (code) renderRoom(); else rerender(); }
   });
+  window.addEventListener('resize', fitHand);
   function rerender() { if (code && room) renderRoom(); else { var jc = document.getElementById('jc'), nm = document.getElementById('nm'); var v = [jc ? jc.value : '', nm ? nm.value : '']; if (nm) me.name = v[1]; renderHome(v[0]); if (rulesOpen) { $app.insertAdjacentHTML('beforeend', rulesHTML()); } } }
+
+  window.__RR = {
+    get S() { return S; },
+    set S(v) { S = v; },
+    get room() { return room; },
+    set room(v) { room = v; },
+    get players() { return players; },
+    set players(v) { players = v; },
+    get me() { return me; },
+    set me(v) { me = v; },
+    get code() { return code; },
+    set code(v) { code = v; },
+    get menuOpen() { return menuOpen; },
+    set menuOpen(v) { menuOpen = v; },
+    renderRoom: renderRoom,
+    renderTable: renderTable,
+    fitHand: fitHand,
+    startDeal: startDeal
+  };
 
   boot();
 })();
