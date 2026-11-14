@@ -56,6 +56,15 @@ function handleClientMessage(client, text) {
       } else if (kind === 'col') {
         client.send(JSON.stringify({ t: 'colSnap', p, docs: getColDocs(p) }));
       }
+    } else if (m.t === 'get') {
+      const { reqId, kind, p } = m;
+      if (!p) return;
+      if (kind === 'doc') {
+        const has = docs.has(p);
+        client.send(JSON.stringify({ t: 'res', reqId, p, exists: has, d: has ? clone(docs.get(p)) : null }));
+      } else if (kind === 'col') {
+        client.send(JSON.stringify({ t: 'res', reqId, p, docs: getColDocs(p) }));
+      }
     } else if (m.t === 'unsub') {
       const { kind, p } = m;
       client.subs.delete(JSON.stringify({ kind, p }));

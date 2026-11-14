@@ -84,6 +84,7 @@
   /* ================= realtime websocket db (online multiplayer) ================= */
   function SocketDB(url) {
     var docs = new Map(), subs = new Set(), ws = null, pingTimer = null, isConnected = false;
+    var reqSeq = 0, pending = new Map(), writeQueue = [];
 
     function clone(o) { return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
     function parent(p) { return p.slice(0, p.lastIndexOf('/')); }
@@ -107,7 +108,54 @@
     function send(obj) {
       if (ws && ws.readyState === WebSocket.OPEN) {
         try { ws.send(JSON.stringify(obj)); } catch (e) {}
+      } else if (ws && ws.readyState === WebSocket.CONNECTING) {
+        writeQueue.push(obj);
       }
+    }
+
+    function request(kind, p) {
+      return new Promise(function (resolve) {
+        function exec() {
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            resolve(kind === 'doc' ? snap(p) : colSnap(p));
+            return;
+          }
+          var reqId = 'req_' + (++reqSeq);
+          var timer = setTimeout(function () {
+            pending.delete(reqId);
+            resolve(kind === 'doc' ? snap(p) : colSnap(p));
+          }, 3500);
+
+          pending.set(reqId, function (m) {
+            clearTimeout(timer);
+            if (kind === 'doc') {
+              if (m.exists && m.d !== null) docs.set(p, clone(m.d));
+              else docs.delete(p);
+              resolve(snap(p));
+            } else {
+              if (Array.isArray(m.docs)) {
+                m.docs.forEach(function (item) {
+                  docs.set(item.path, clone(item.data));
+                });
+              }
+              resolve(colSnap(p));
+            }
+          });
+
+          send({ t: 'get', reqId: reqId, kind: kind, p: p });
+        }
+
+        if (ws && ws.readyState === WebSocket.CONNECTING) {
+          var chk = setInterval(function () {
+            if (!ws || ws.readyState !== WebSocket.CONNECTING) {
+              clearInterval(chk);
+              exec();
+            }
+          }, 40);
+        } else {
+          exec();
+        }
+      });
     }
 
     function connect() {
@@ -122,6 +170,9 @@
         subs.forEach(function (s) {
           send({ t: 'sub', kind: s.kind, p: s.path });
         });
+        while (writeQueue.length > 0) {
+          send(writeQueue.shift());
+        }
         clearInterval(pingTimer);
         pingTimer = setInterval(function () { send({ t: 'ping' }); }, 20000);
       };
@@ -130,6 +181,12 @@
         try {
           var m = JSON.parse(ev.data);
           if (!m || !m.t) return;
+          if (m.t === 'res' && m.reqId && pending.has(m.reqId)) {
+            var handler = pending.get(m.reqId);
+            pending.delete(m.reqId);
+            handler(m);
+            return;
+          }
           if (m.t === 'snap') {
             if (m.exists && m.d !== null) docs.set(m.p, clone(m.d));
             else docs.delete(m.p);
@@ -186,7 +243,7 @@
     function doc(path) {
       return {
         id: path.split('/').pop(), path: path,
-        get: function () { return Promise.resolve(snap(path)); },
+        get: function () { return request('doc', path); },
         set: function (d) { write(path, d); return Promise.resolve(); },
         update: function (d) {
           var cur = docs.get(path) || {};
@@ -202,7 +259,7 @@
       return {
         path: path,
         doc: function (id) { return doc(path + '/' + (id || rid(12))); },
-        get: function () { return Promise.resolve(colSnap(path)); },
+        get: function () { return request('col', path); },
         onSnapshot: function (fn) { return sub('col', path, fn); }
       };
     }
