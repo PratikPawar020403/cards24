@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const css = fs.readFileSync(path.join(__dirname, 'style.css'), 'utf8');
+const cardCss = fs.readFileSync(path.join(__dirname, 'cards.css'), 'utf8');
+const cardJs = fs.readFileSync(path.join(__dirname, 'cards.js'), 'utf8');
 const logic = fs.readFileSync(path.join(__dirname, 'logic.js'), 'utf8');
 const app = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
 
@@ -12,6 +14,7 @@ const html = `<!doctype html><html><head><meta charset=utf8><meta name=viewport 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Sans:wght@400;500;700&family=Yatra+One&display=swap">
 <style>
 ${css}
+${cardCss}
 </style>
 <div id="app"></div>
 <div class="rotate" role="alert">
@@ -26,6 +29,9 @@ ${css}
   <p class="rotate-sub">For the best Rummy experience, please turn your phone sideways.</p>
 </div>
 <script>
+${cardJs}
+</script>
+<script>
 ${logic}
 </script>
 <script>
@@ -35,4 +41,4 @@ ${app}
 `;
 
 fs.writeFileSync(path.join(__dirname, 'Rummy.html'), html, 'utf8');
-console.log('Rummy.html successfully synchronized with style.css, logic.js, and app.js!');
+console.log('Rummy.html successfully synchronized with style.css, cards.css, cards.js, logic.js, and app.js!');

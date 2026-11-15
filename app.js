@@ -272,6 +272,9 @@
   var code = null, room = null, players = {}, S = null, unsubs = [];
   var sel = {}, layout = [], layoutKey = '', dismissed = '', rulesOpen = false, scoresOpen = false, confirmDrop = false, reactOpen = false, menuOpen = false;
   var felt = lsGet('rr-felt') || 'emerald', lastTurnKey = '', botTimer = null, botKey = '', seenReact = {}, wq = Promise.resolve();
+  var backTheme = lsGet('rr-back') || 'coral';
+  var deckStyle = lsGet('rr-deck') || 'classic';
+  if (window.RummyCards) { RummyCards.setBack(backTheme); RummyCards.setDeck(deckStyle); }
   var evCache = { key: '', ev: null }, playersSig = '', hb = null;
   var titleTimer = null, origTitle = 'Rummy Room', wasMineTurn = false;
   var leaveModalOpen = false, confirmWrongDeclareCard = null;
@@ -665,14 +668,13 @@
 
   /* ================= card + hand rendering ================= */
   function cardHTML(id, extra) {
-    var c = L.INFO[id], wild = S ? S.wild : 0, cls = 'card';
-    if (c.joker) cls += ' joker'; else if (c.suit === 1 || c.suit === 2) cls += ' red';
-    if (!c.joker && c.rank === wild) cls += ' wild';
-    if (extra) cls += ' ' + extra;
-    if (dragIds && dragIds[id]) cls += ' ghosted';
-    if (c.joker) return '<div class="' + cls + '" data-card="' + id + '"><span class="tl">★</span><span class="mid">JOKER</span></div>';
+    if (id == null || !L.INFO[id]) return '<div class="card" style="opacity:.2"></div>';
+    var c = L.INFO[id], wild = S ? S.wild : 0;
+    var isWild = !c.joker && wild > 0 && c.rank === wild;
+    var cls = (extra || '') + (dragIds && dragIds[id] ? ' ghosted' : '');
+    if (window.RummyCards) return RummyCards.cardHTML(id, c, { wild: isWild, cls: cls.trim() });
     var sym = L.SUIT_SYM[c.suit] + '︎';
-    return '<div class="' + cls + '" data-card="' + id + '"><span class="tl">' + L.RANK_LBL[c.rank] + '<b>' + sym + '</b></span><span class="mid">' + sym + '</span></div>';
+    return '<div class="card" data-card="' + id + '"><span class="tl">' + L.RANK_LBL[c.rank] + '<b>' + sym + '</b></span></div>';
   }
   var TAGS = ['Loose', 'Set', 'Sequence', 'Pure'];
   function tagFor(g) {
@@ -760,7 +762,11 @@
       '<div class="col">' + (host ? '<button class="btn gold" data-a="start" ' + (ps.length < 2 ? 'disabled' : '') + '>' + (ps.length < 2 ? 'Waiting for a second player' : 'Deal the cards') + '</button>'
         : '<div class="panel" style="text-align:center;color:var(--muted)">Waiting for the host to deal.</div>') + '<div class="panel"><div class="note" style="margin:0 0 8px">Game type' + (host ? '' : ' (host chooses)') + '</div><div class="modes">' + modes + '</div>' +
       '<div class="field" style="margin-top:10px"><label for="ts">Turn timer</label><select id="ts" data-a="timer" ' + (host ? '' : 'disabled') + '>' +
-      [20, 30, 45, 60, 0].map(function (n) { return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>'; }).join('') + '</select></div></div>' +
+      [20, 30, 45, 60, 0].map(function (n) { return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>'; }).join('') + '</select></div>' +
+      '<div class="row" style="margin-top:10px;gap:6px">' +
+      '<button class="btn small" data-a="deck" style="flex:1" title="Toggle deck colors">' + (deckStyle === 'four' ? '🎨 4-Colour' : '🎨 Classic Deck') + '</button>' +
+      '<button class="btn small" data-a="cardback" style="flex:1" title="Cycle card back">' + '🎴 Back: ' + backTheme.toUpperCase() + '</button>' +
+      '</div></div>' +
       '</div></div>' + (rulesOpen ? rulesHTML() : '');
   }
 
@@ -988,6 +994,8 @@
       '<div class="menu-buttons">' +
       '<button class="btn" data-a="scores">📊 Scores</button>' +
       '<button class="btn" data-a="rules">📖 How to Play</button>' +
+      '<button class="btn" data-a="deck">🎨 Deck Style (' + (deckStyle === 'four' ? '4-Colour' : 'Classic') + ')</button>' +
+      '<button class="btn" data-a="cardback">🎴 Card Back (' + backTheme.toUpperCase() + ')</button>' +
       '<button class="btn" data-a="felt">◐ Felt Color (' + felt + ')</button>' +
       '<button class="btn" data-a="mute">' + (muted ? '🔇 Unmute Sound' : '🔊 Mute Sound') + '</button>' +
       '<button class="btn danger" data-a="leave">🚪 Leave Table</button>' +
@@ -1679,6 +1687,22 @@
       case 'react': reactOpen = true; renderRoom(); break;
       case 'closereact': reactOpen = false; renderRoom(); break;
       case 'emoji': react(el.dataset.e); break;
+      case 'deck':
+        deckStyle = deckStyle === 'classic' ? 'four' : 'classic';
+        lsSet('rr-deck', deckStyle);
+        if (window.RummyCards) RummyCards.setDeck(deckStyle);
+        toast(deckStyle === 'four' ? 'Four-colour deck active' : 'Classic deck active');
+        renderRoom();
+        break;
+      case 'cardback':
+        var themes = ['coral', 'navy', 'teal'];
+        var bIdx = themes.indexOf(backTheme);
+        backTheme = themes[(bIdx + 1) % themes.length];
+        lsSet('rr-back', backTheme);
+        if (window.RummyCards) RummyCards.setBack(backTheme);
+        toast('Card back: ' + backTheme);
+        renderRoom();
+        break;
       case 'felt': felt = { emerald: 'crimson', crimson: 'midnight', midnight: 'emerald' }[felt]; lsSet('rr-felt', felt); renderRoom(); break;
       case 'dealer': dealerSay(QUIPS[Math.floor(Math.random() * QUIPS.length)]); dealerPlay('clap', 900); break;
       case 'mute': muted = !muted; lsSet('rr-muted', muted ? '1' : '0'); renderRoom(); break;
