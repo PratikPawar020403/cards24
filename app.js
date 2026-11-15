@@ -272,7 +272,7 @@
   var code = null, room = null, players = {}, S = null, unsubs = [];
   var sel = {}, layout = [], layoutKey = '', dismissed = '', rulesOpen = false, scoresOpen = false, confirmDrop = false, reactOpen = false, menuOpen = false;
   var felt = lsGet('rr-felt') || 'emerald', lastTurnKey = '', botTimer = null, botKey = '', seenReact = {}, wq = Promise.resolve();
-  var backTheme = lsGet('rr-back') || 'coral';
+  var backTheme = lsGet('rr-back') || 'emerald';
   var deckStyle = lsGet('rr-deck') || 'classic';
   if (window.RummyCards) { RummyCards.setBack(backTheme); RummyCards.setDeck(deckStyle); }
   var evCache = { key: '', ev: null }, playersSig = '', hb = null;
@@ -1695,7 +1695,7 @@
         renderRoom();
         break;
       case 'cardback':
-        var themes = ['coral', 'navy', 'teal'];
+        var themes = ['emerald', 'burgundy', 'navy'];
         var bIdx = themes.indexOf(backTheme);
         backTheme = themes[(bIdx + 1) % themes.length];
         lsSet('rr-back', backTheme);

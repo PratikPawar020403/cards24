@@ -67,45 +67,55 @@ ${logicJs}
 const grid = document.getElementById('deck-grid');
 RummyCards.setBack('coral');
 
-// Render 4 suits (Spades=0, Hearts=1, Diamonds=2, Clubs=3) x 13 ranks
-const suits = ['♠ Spades', '♥ Hearts', '♦ Diamonds', '♣ Clubs'];
-for (let s = 0; s < 4; s++) {
+// Render 4 suits in reference image order: Spades(0), Clubs(3), Hearts(1), Diamonds(2)
+const suitOrder = [
+  { s: 0, name: '♠ Spades (Charcoal)' },
+  { s: 3, name: '♣ Clubs (Charcoal)' },
+  { s: 1, name: '♥ Hearts (Deep Burgundy)' },
+  { s: 2, name: '♦ Diamonds (Deep Burgundy)' }
+];
+
+suitOrder.forEach(({ s, name }) => {
   const lbl = document.createElement('div');
   lbl.className = 'label';
-  lbl.textContent = suits[s];
+  lbl.textContent = name;
   grid.appendChild(lbl);
   for (let r = 1; r <= 13; r++) {
-    // ID in deck 1: s * 13 + (r - 1)
     const id = s * 13 + (r - 1);
     const wrap = document.createElement('div');
-    wrap.innerHTML = RummyCards.cardHTML(id, { joker: false, suit: s, rank: r }, {});
+    wrap.innerHTML = RummyCards.cardHTML(id, { id, joker: false, suit: s, rank: r }, {});
     grid.appendChild(wrap.firstElementChild);
   }
-}
+});
 
-// Special cards: Joker, Wild Card, 3 Backs
+// Special cards: Emerald Green Card Back, Charcoal Joker (52), Burgundy Joker (53), Wild Card
 const specLbl = document.createElement('div');
 specLbl.className = 'label';
-specLbl.textContent = 'Special Cards & Backs (Joker, Wild 6♥, Backs: Coral, Navy, Teal)';
+specLbl.textContent = 'Card Back (Emerald Green & Antique Gold), Two Distinct Jokers (Charcoal & Burgundy), Wild Card (W)';
 grid.appendChild(specLbl);
 
-// Joker
-const jWrap = document.createElement('div');
-jWrap.innerHTML = RummyCards.cardHTML(52, { joker: true, suit: -1, rank: 0 }, {});
-grid.appendChild(jWrap.firstElementChild);
+// Emerald Green Card Backs
+for (let b = 0; b < 4; b++) {
+  const bEl = document.createElement('div');
+  bEl.className = 'back';
+  bEl.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(RummyCards.backSVG('emerald')) + '")';
+  grid.appendChild(bEl);
+}
+
+// Charcoal Joker (ID 52)
+const j1Wrap = document.createElement('div');
+j1Wrap.innerHTML = RummyCards.cardHTML(52, { id: 52, joker: true, suit: -1, rank: 0 }, {});
+grid.appendChild(j1Wrap.firstElementChild);
+
+// Burgundy Joker (ID 53)
+const j2Wrap = document.createElement('div');
+j2Wrap.innerHTML = RummyCards.cardHTML(53, { id: 53, joker: true, suit: -1, rank: 0 }, {});
+grid.appendChild(j2Wrap.firstElementChild);
 
 // Wild 6 of Hearts
 const wWrap = document.createElement('div');
-wWrap.innerHTML = RummyCards.cardHTML(18, { joker: false, suit: 1, rank: 6 }, { wild: true });
+wWrap.innerHTML = RummyCards.cardHTML(18, { id: 18, joker: false, suit: 1, rank: 6 }, { wild: true });
 grid.appendChild(wWrap.firstElementChild);
-
-// Backs
-['coral', 'navy', 'teal'].forEach(t => {
-  const b = document.createElement('div');
-  b.className = 'back';
-  b.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(RummyCards.backSVG(t)) + '")';
-  grid.appendChild(b);
-});
 </script>
 </body>
 </html>`;
