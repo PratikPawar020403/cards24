@@ -276,15 +276,40 @@
   var titleTimer = null, origTitle = 'Rummy Room', wasMineTurn = false;
   var leaveModalOpen = false, confirmWrongDeclareCard = null;
   var dealerAct = null, dealerBubble = null, bubbleTimer = null, lastAnimV = null, lastDealKey = '', endKey = '', animLockUntil = 0, renderPending = false;
-  var dragIds = null, drag = null, suppressClick = false, lastBuzz = -1;
+  var dragIds = null, drag = null, didRealDrag = false, lastBuzz = -1;
+  var pointerIsDown = false, deferredRender = false, activePointer = null, lastTapHandledAt = 0;
   var reduced = false; try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduced = false; }
+
+  function isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
+  function toggleFullscreen() {
+    try {
+      if (!isFullscreen()) {
+        var docEl = document.documentElement;
+        var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        if (req) req.call(docEl);
+      } else {
+        var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        if (ex) ex.call(document);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function scheduleRenderRoom() {
+    if (pointerIsDown) {
+      deferredRender = true;
+      return;
+    }
+    renderRoom();
+  }
 
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function enqueue(fn) {
     wq = wq.then(async function () {
       try { await fn(); } catch (e1) {
         await sleep(900);
-        try { await fn(); } catch (e2) { toast('Could not save: ' + ((e2 && e2.message) || (e2 && e2.code) || 'connection problem') + '. Check your connection.'); }
+        try { await fn(); } catch (e2) { toast('Move not saved, try again'); }
       }
     });
     return wq;
@@ -293,8 +318,8 @@
     var cur = await stateRef().get(), d = cur.exists ? cur.data() : null;
     if (d && prev && d.v !== prev.v) {
       if (d.v === next.v) return;
-      S = d; renderRoom();
-      if (!quiet) toast('The table moved on before your move was saved.');
+      S = d; scheduleRenderRoom();
+      if (!quiet) toast('Move not saved, try again');
       return;
     }
     await stateRef().set(next);
@@ -407,18 +432,18 @@
     lsSet('rr-auto', '1');
     unsubAll();
     var timer = null;
-    unsubs.push(roomRef().onSnapshot(function (s) { room = s.exists ? s.data() : null; if (!room && code) { toast('This room no longer exists.'); lsSet('rr-room', ''); renderHome(); return; } renderRoom(); }));
+    unsubs.push(roomRef().onSnapshot(function (s) { room = s.exists ? s.data() : null; if (!room && code) { toast('This room no longer exists.'); lsSet('rr-room', ''); renderHome(); return; } scheduleRenderRoom(); }));
     unsubs.push(playersCol().onSnapshot(function (s) {
       var m = {}, sigObj = {}; s.docs.forEach(function (d) { var v = d.data(); m[d.id] = v; var c = Object.assign({}, v); delete c.seen; sigObj[d.id] = c; });
       players = m;
       Object.keys(m).forEach(function (u) { var r = m[u].react; if (r && r.t !== seenReact[u]) { if (seenReact[u] !== undefined) floatEmoji(r.e, u); seenReact[u] = r.t; } });
       var sig = JSON.stringify(sigObj);
-      if (sig !== playersSig) { playersSig = sig; renderRoom(); }
+      if (sig !== playersSig) { playersSig = sig; scheduleRenderRoom(); }
     }));
     unsubs.push(stateRef().onSnapshot(function (s) {
       var d = s.exists ? s.data() : null;
       if (S && d && d.round === S.round && d.v < S.v) return;
-      S = d; renderRoom();
+      S = d; scheduleRenderRoom();
     }));
     clearInterval(tick); tick = setInterval(onTick, 500);
     clearInterval(hb); hb = setInterval(beat, 10000);
@@ -492,7 +517,10 @@
   function backToLobby() { enqueue(async function () { await stateRef().delete(); await roomRef().update({ status: 'lobby' }); }); dismissed = ''; }
 
   function act(a) {
-    if (!S || Date.now() < dealUntil) return;
+    if (!S || Date.now() < dealUntil) {
+      if (Date.now() < dealUntil) toast('Cards are being dealt');
+      return;
+    }
     try {
       var pre = captureFor(a), prev = S, next = L.apply(S, Object.assign({ uid: me.uid }, a), Date.now());
       S = next; confirmDrop = false;
@@ -500,7 +528,13 @@
       renderRoom();
       flyAfter(a, pre, next);
       enqueue(function () { return commit(next, prev, false); });
-    } catch (e) { sfx('err'); toast(e.message || 'That move is not allowed.'); }
+    } catch (e) {
+      sfx('err');
+      var msg = e.message || 'That move is not allowed.';
+      if (msg.indexOf('picked up') >= 0) msg = 'You just picked this card up, choose another';
+      else if (msg.indexOf('Joker') >= 0) msg = "Jokers can't be taken from the open pile";
+      toast(msg);
+    }
   }
   function actAs(uid, a) {
     try {
@@ -595,7 +629,7 @@
     var seen = {};
     layout = layout.map(function (g) { return g.filter(function (id) { if (have[id] && !seen[id]) { seen[id] = 1; return true; } return false; }); }).filter(function (g) { return g.length; });
     var extra = hand.filter(function (id) { return !seen[id]; });
-    if (!layout.length) layout = suitLayout(hand);
+    if (!layout.length || extra.length > 2) layout = suitLayout(hand);
     else extra.forEach(function (id) { layout.push([id]); });
     Object.keys(sel).forEach(function (id) { if (!have[id]) delete sel[id]; });
   }
@@ -690,6 +724,10 @@
   var lastHTMLKey = '';
   function renderRoom() {
     if (!code || !room) return;
+    if (pointerIsDown) {
+      deferredRender = true;
+      return;
+    }
     if (Date.now() < animLockUntil) {
       if (!renderPending) { renderPending = true; setTimeout(function () { renderPending = false; renderRoom(); }, animLockUntil - Date.now() + 20); }
       return;
@@ -770,8 +808,8 @@
           skipBtn +
         '</div>' +
         '<div class="chip-row2">' +
-          (st === 'active' ? '<span class="chip-cards">🂠<span class="chip-cards-cnt">' + n + '</span></span>' : '<span class="pill bad" style="font-size:9px;padding:0 3px">Out</span>') +
-          '<span class="chip-pts">· ' + tot + 'p</span>' +
+          (st === 'active' ? '<span class="chip-cards">🂠<span class="chip-cards-cnt">' + n + '</span></span>' : '<span class="pill bad" style="font-size:11px;padding:1px 4px">Out</span>') +
+          '<span class="chip-pts">· ' + tot + ' pts</span>' +
           (isTurn ? '<span class="chip-timer" id="timer"></span>' : '') +
         '</div>' +
       '</div>' +
@@ -788,23 +826,36 @@
     var G = groups.length || 1;
     var N = cards.length;
     var totalOverlaps = N - G;
+    var availW = handEl.clientWidth - 16;
     if (totalOverlaps <= 0) {
       handEl.style.setProperty('--card-overlap', '0px');
+      var totalW0 = N * cw + (G - 1) * 6;
+      handEl.style.justifyContent = (totalW0 > availW) ? 'flex-start' : 'safe center';
+      handEl.scrollLeft = 0;
       return;
     }
-    var availW = handEl.clientWidth - 16;
     var totalNoOverlap = N * cw + (G - 1) * 6;
     if (totalNoOverlap <= availW) {
       var comfortable = -Math.min(18, Math.max(8, Math.round(cw * 0.35)));
       handEl.style.setProperty('--card-overlap', comfortable + 'px');
+      handEl.style.justifyContent = 'safe center';
+      handEl.scrollLeft = 0;
       return;
     }
     var neededNegative = totalNoOverlap - availW;
     var overlap = - (neededNegative / totalOverlaps);
-    /* Enforce tap strip >= 28px: strip = cw + overlap >= 28 => overlap >= -(cw - 28) */
-    var maxNegativeOverlap = -(cw - 28);
+    /* Enforce tap strip >= 22px: strip = cw + overlap >= 22 => overlap >= -(cw - 22) */
+    var maxNegativeOverlap = -(cw - 22);
     var chosenOverlap = Math.max(maxNegativeOverlap, overlap);
     handEl.style.setProperty('--card-overlap', chosenOverlap.toFixed(1) + 'px');
+
+    var finalHandW = N * cw + totalOverlaps * chosenOverlap + (G - 1) * 6;
+    if (finalHandW > availW) {
+      handEl.style.justifyContent = 'flex-start';
+    } else {
+      handEl.style.justifyContent = 'safe center';
+    }
+    handEl.scrollLeft = 0;
   }
 
   function renderTable() {
@@ -869,10 +920,10 @@
         var t = tagFor(g), anySel = g.some(function (id) { return sel[id]; });
         var tagHTML = t ? '<span class="group-meld-tag t' + t[0] + '">' + t[1] + '</span>' : '';
         return '<div class="group' + (moveMode && !anySel ? ' target' : '') + '" data-g="' + gi + '">' +
-          tagHTML +
           '<div class="cards">' +
             g.map(function (id) { return cardHTML(id, sel[id] ? 'sel' : ''); }).join('') +
           '</div>' +
+          '<div class="group-tag-row">' + tagHTML + '</div>' +
         '</div>';
       }).join('');
     } else {
@@ -895,11 +946,12 @@
         '<button class="btn danger" data-a="drop" ' + (mineTurn && S.stage === 'draw' ? '' : 'disabled') + '>' + (confirmDrop ? 'Confirm' : 'Drop') + '</button>' +
         '<button class="btn" data-a="group" ' + (selList.length ? '' : 'disabled') + '>Group</button>' +
         '<button class="btn" data-a="sort">Sort</button>' +
+        '<button class="btn" data-a="auto">Auto</button>' +
       '</div>';
     } else if (inGame && !active) {
-      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button><button class="btn" disabled>Dropped</button></div>';
+      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button><button class="btn" data-a="auto">Auto</button><button class="btn" disabled>Dropped</button></div>';
     } else {
-      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button></div>';
+      actionGrid = '<div class="action-grid"><button class="btn" data-a="sort">Sort</button><button class="btn" data-a="auto">Auto</button></div>';
     }
 
     var rail = '<aside class="rail">' + meChip + actionGrid + '</aside>';
@@ -950,6 +1002,7 @@
         '</div>' +
         '<div class="bar-right">' +
           '<button class="btn icon-btn" data-a="react" aria-label="Reactions" title="Reactions">😀</button>' +
+          '<button class="btn icon-btn" data-a="fullscreen" aria-label="Toggle Full Screen" title="Full Screen">' + (isFullscreen() ? '🗗' : '⛶') + '</button>' +
           '<button class="btn icon-btn" data-a="menu" aria-label="Menu" title="Menu">☰</button>' +
         '</div>' +
       '</div>';
@@ -1207,13 +1260,14 @@
   }
   var dealUntil = 0;
   function animateDeal() {
-    if (reduced) return;
+    var isReduced = false;
+    try { isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { isReduced = false; }
+    if (reduced || isReduced) return;
     var dealerEl = document.querySelector('.dealer-cell, .felt > .dealer'), sr = rectOf('.pile[data-a=stock] .stack');
     if (!dealerEl || !sr) return;
     var dr = dealerEl.getBoundingClientRect(), origin = { left: dr.left + dr.width * .66, top: dr.top + dr.height * .74, width: 0, height: 0 };
     var si = S.order.indexOf(S.turn), seq = si < 0 ? S.order.slice() : S.order.slice(si).concat(S.order.slice(0, si)), n = seq.length;
-    var step = Math.max(34, Math.min(70, 2600 / (13 * n))), t = 0, mine = (S.hands[me.uid] || []).slice(), mi = 0, total = Math.round(13 * n * step + 1500);
-    dealUntil = Date.now() + total; animLockUntil = Math.max(animLockUntil, dealUntil);
+    var mine = (S.hands[me.uid] || []).slice();
     var dealerNode = dealerEl; dealerNode.classList.add('dealing');
     var hidden = [];
     mine.forEach(function (id) { var el = document.querySelector('#hand [data-card="' + id + '"]'); if (el) { el.style.visibility = 'hidden'; hidden.push(el); } });
@@ -1222,19 +1276,50 @@
     if (cutEl) { cutEl.style.visibility = 'hidden'; hidden.push(cutEl); }
     var shown = {}; seq.forEach(function (u) { shown[u] = 0; if (u !== me.uid) setSeatCount(u, 0); });
     var back = '<div class="back"></div>';
+
+    // Cap flyers: animate round-by-round so no more than n <= 6 <= 13 flyers are in flight simultaneously
+    var roundStep = Math.max(90, Math.min(130, 1800 / 13));
+    var flyDur = 250;
+    var total = Math.round(13 * roundStep + flyDur + 500);
+    dealUntil = Date.now() + total; animLockUntil = Math.max(animLockUntil, dealUntil);
+
     for (var r = 0; r < 13; r++) {
-      seq.forEach(function (u) {
-        var isMe = u === me.uid, cid = isMe ? mine[mi++] : null, delay = t; t += step;
+      (function (roundIdx) {
         setTimeout(function () {
-          var to = isMe ? rectOf('#hand [data-card="' + cid + '"]') : seatTarget(u);
-          if (!to) return;
-          if (isMe) fly(origin, to, back, { flip: cardHTML(cid), s0: .7, dur: 380, done: function () { var el = document.querySelector('#hand [data-card="' + cid + '"]'); if (el) { el.style.visibility = ''; el.classList.add('fresh'); } sfx('deal'); } });
-          else fly(origin, to, back, { s0: .7, s1: .42, dur: 380, done: function () { shown[u]++; setSeatCount(u, shown[u]); sfx('deal'); } });
-        }, delay);
-      });
+          seq.forEach(function (u) {
+            var isMe = u === me.uid, cid = isMe ? mine[roundIdx] : null;
+            var to = isMe ? rectOf('#hand [data-card="' + cid + '"]') : seatTarget(u);
+            if (!to) return;
+            if (isMe) {
+              fly(origin, to, back, {
+                flip: cardHTML(cid),
+                s0: .7,
+                dur: flyDur,
+                done: function () {
+                  var el = document.querySelector('#hand [data-card="' + cid + '"]');
+                  if (el) { el.style.visibility = ''; el.classList.add('fresh'); }
+                  sfx('deal');
+                }
+              });
+            } else {
+              fly(origin, to, back, {
+                s0: .7,
+                s1: .42,
+                dur: flyDur,
+                done: function () {
+                  shown[u]++;
+                  setSeatCount(u, shown[u]);
+                  sfx('deal');
+                }
+              });
+            }
+          });
+        }, roundIdx * roundStep);
+      })(r);
     }
-    setTimeout(function () { if (openEl) fly(origin, openEl, back, { flip: cardHTML(openId), dur: 460, hide: openEl }); }, t + 120);
-    setTimeout(function () { if (cutEl) fly(origin, cutEl, back, { flip: cardHTML(S.cut), dur: 500, hide: cutEl }); }, t + 300);
+    var afterRounds = 13 * roundStep + flyDur;
+    setTimeout(function () { if (openEl) fly(origin, openEl, back, { flip: cardHTML(openId), dur: 320, hide: openEl }); }, afterRounds);
+    setTimeout(function () { if (cutEl) fly(origin, cutEl, back, { flip: cardHTML(S.cut), dur: 340, hide: cutEl }); }, afterRounds + 140);
     setTimeout(function () {
       dealerNode.classList.remove('dealing');
       hidden.forEach(function (el) { el.style.visibility = ''; });
@@ -1305,7 +1390,6 @@
     if (!drag) return;
     var d = drag; drag = null;
     if (!d.on) return;
-    suppressClick = true; setTimeout(function () { suppressClick = false; }, 80);
     var over = document.querySelector('.group.over'); if (over) over.classList.remove('over');
     var overFin = document.querySelector('.finish-pile.over'); if (overFin) overFin.classList.remove('over');
     if (d.ghost) d.ghost.remove();
@@ -1347,14 +1431,27 @@
     layout = layout.filter(function (g) { return g.length; });
     sel = {}; saveLayout(); renderRoom();
   }
+
   document.addEventListener('pointerdown', function (ev) {
-    if (ev.button > 0 || !S || S.phase !== 'play') return;
+    if (ev.button > 0) return;
+    pointerIsDown = true;
+    activePointer = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, moved: false };
+    if (!S || S.phase !== 'play') return;
     var c = ev.target.closest('#hand [data-card]');
     if (c) drag = { id: +c.dataset.card, x: ev.clientX, y: ev.clientY, on: false, el: c };
   });
+
   document.addEventListener('pointermove', function (ev) {
+    if (activePointer && ev.pointerId === activePointer.id) {
+      if (Math.hypot(ev.clientX - activePointer.x, ev.clientY - activePointer.y) >= 10) {
+        activePointer.moved = true;
+      }
+    }
     if (!drag) return;
-    if (!drag.on) { if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) < 8) return; startDrag(ev); }
+    if (!drag.on) {
+      if (Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) < 10) return;
+      startDrag(ev);
+    }
     ghostPos(ev);
     var el = dropTarget(ev.clientX, ev.clientY), grp = el && el.closest('.group');
     var finishEl = el && el.closest('.finish-pile, [data-a=finish]');
@@ -1363,34 +1460,121 @@
     if (grp) grp.classList.add('over');
     if (finishEl) finishEl.classList.add('over');
   });
-  document.addEventListener('pointerup', function (ev) { endDrag(ev, false); });
-  document.addEventListener('pointercancel', function (ev) { endDrag(ev, true); });
 
-  /* ================= events ================= */
-  document.addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-a],[data-card]');
-    if (!t) return;
-    if (t.dataset.card != null && !t.dataset.a) {
-      if (!S || S.phase !== 'play' || t.closest('.pile') || t.closest('.wildbox') || t.closest('.sheet')) return;
-      if (suppressClick) return;
-      var id = +t.dataset.card;
-      if (!t.closest('.hand')) return;
+  document.addEventListener('pointerup', function (ev) {
+    var wasDragging = drag && drag.on;
+    if (wasDragging) {
+      didRealDrag = true;
+      endDrag(ev, false);
+    } else {
+      drag = null;
+    }
+
+    if (!wasDragging && activePointer && ev.pointerId === activePointer.id) {
+      var dist = Math.hypot(ev.clientX - activePointer.x, ev.clientY - activePointer.y);
+      if (dist < 10) {
+        handleTapOrAction(ev.target, ev);
+      }
+    }
+    activePointer = null;
+    pointerIsDown = false;
+    if (deferredRender) {
+      deferredRender = false;
+      requestAnimationFrame(function () {
+        renderRoom();
+      });
+    }
+  });
+
+  document.addEventListener('pointercancel', function (ev) {
+    if (drag && drag.on) {
+      endDrag(ev, true);
+    } else {
+      drag = null;
+    }
+    activePointer = null;
+    pointerIsDown = false;
+    if (deferredRender) {
+      deferredRender = false;
+      requestAnimationFrame(function () {
+        renderRoom();
+      });
+    }
+  });
+
+  /* ================= targeted updates & event routing ================= */
+  function updateHandSelection() {
+    var handEl = document.getElementById('hand');
+    if (!handEl) { renderRoom(); return; }
+    var cards = handEl.querySelectorAll('.card');
+    cards.forEach(function (c) {
+      var cid = +c.dataset.card;
+      c.classList.toggle('sel', !!sel[cid]);
+    });
+    var selList = selIds(), pickSel = selList.length === 1 ? selList[0] : null;
+    var discardBtn = document.querySelector('[data-a="discard"]');
+    var groupBtn = document.querySelector('[data-a="group"]');
+    var inGame = S && S.order.indexOf(me.uid) >= 0 && S.status[me.uid] === 'active';
+    var mineTurn = inGame && S.phase === 'play' && S.turn === me.uid;
+    if (discardBtn) {
+      if (mineTurn && S.stage === 'discard' && pickSel != null) discardBtn.removeAttribute('disabled');
+      else discardBtn.setAttribute('disabled', 'disabled');
+    }
+    if (groupBtn) {
+      if (selList.length > 0) groupBtn.removeAttribute('disabled');
+      else groupBtn.setAttribute('disabled', 'disabled');
+    }
+  }
+
+  function handleTapOrAction(rawTarget, ev) {
+    if (!rawTarget) return;
+    lastTapHandledAt = Date.now();
+
+    // Priority 1: Check for an action element with [data-a]
+    var actionEl = rawTarget.closest('[data-a]');
+    if (actionEl) {
+      var a = actionEl.dataset.a;
+      if (actionEl.classList.contains('modal') && rawTarget !== actionEl) return;
+      executeAction(a, actionEl, ev);
+      return;
+    }
+
+    // Priority 2: Check for hand card selection strictly inside #hand
+    var handCard = rawTarget.closest('#hand [data-card]');
+    if (handCard) {
+      if (!S || S.phase !== 'play') return;
+      var id = +handCard.dataset.card;
       try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) { /* no haptics */ }
       if (sel[id]) delete sel[id]; else sel[id] = 1;
-      renderRoom(); return;
+      updateHandSelection();
+      return;
     }
-    var a = t.dataset.a;
-    if (t.classList.contains('modal') && ev.target !== t) return;
+
+    // Priority 3: Moving selected cards to a target group
+    var g = rawTarget.closest('.group.target');
+    if (g && !rawTarget.closest('[data-card]') && selIds().length) {
+      moveSelectedTo(+g.dataset.g);
+      return;
+    }
+  }
+
+  function executeAction(a, el, ev) {
     switch (a) {
       case 'create': createRoom(); break;
       case 'join': joinRoom(document.getElementById('jc').value); break;
-      case 'resume': document.getElementById('jc').value = t.dataset.code; joinRoom(t.dataset.code); break;
+      case 'resume': document.getElementById('jc').value = el.dataset.code; joinRoom(el.dataset.code); break;
       case 'menu': menuOpen = true; renderRoom(); break;
       case 'closemenu': menuOpen = false; renderRoom(); break;
       case 'rules': menuOpen = false; rulesOpen = true; rerender(); break;
       case 'closerules': rulesOpen = false; rerender(); break;
       case 'scores': menuOpen = false; scoresOpen = true; renderRoom(); break;
       case 'closescores': scoresOpen = false; renderRoom(); break;
+      case 'fullscreen': toggleFullscreen(); break;
+      case 'dismisspwa':
+        lsSet('rr-pwa-dismiss', '1');
+        var ph = document.getElementById('pwa-hint');
+        if (ph) ph.remove();
+        break;
       case 'copy':
         var shareUrl = location.origin + location.pathname + '#r-' + code;
         try {
@@ -1404,23 +1588,57 @@
         break;
       case 'leave': menuOpen = false; leaveRoom(); break;
       case 'addbot': addBot(); break;
-      case 'remove': removePlayer(t.dataset.u); break;
-      case 'mode': setRoom({ mode: t.dataset.m }); break;
+      case 'remove': removePlayer(el.dataset.u); break;
+      case 'mode': setRoom({ mode: el.dataset.m }); break;
       case 'start': startDeal(true); break;
       case 'next': startDeal(false); break;
       case 'lobby': backToLobby(); break;
       case 'closeres': dismissed = S.round + ':' + S.result.winner; renderRoom(); break;
-      case 'stock': if (S && S.turn === me.uid) act({ type: 'drawStock' }); break;
-      case 'pickup': if (S && S.turn === me.uid) act({ type: 'drawDiscard' }); break;
-      case 'discard': var s1 = selIds(); if (s1.length === 1) act({ type: 'discard', card: s1[0] }); break;
+      case 'stock':
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage === 'discard') { toast('You already drew a card. Choose a card to discard'); return; }
+        act({ type: 'drawStock' });
+        break;
+      case 'pickup':
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage === 'discard') { toast('You already drew a card. Choose a card to discard'); return; }
+        var top = S.discard[S.discard.length - 1];
+        if (top !== undefined && (L.INFO[top].joker || L.INFO[top].rank === S.wild)) {
+          toast("Jokers can't be taken from the open pile");
+          return;
+        }
+        act({ type: 'drawDiscard' });
+        break;
+      case 'discard':
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage === 'draw') { toast('Tap the stock or the open card first'); return; }
+        var s1 = selIds();
+        if (s1.length !== 1) {
+          toast('Select one card from your hand to discard');
+          return;
+        }
+        if (S.pickup === s1[0]) {
+          toast('You just picked this card up, choose another');
+          return;
+        }
+        act({ type: 'discard', card: s1[0] });
+        break;
       case 'finish':
-        if (!S || S.turn !== me.uid || S.stage !== 'discard') return;
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage !== 'discard') { toast('Draw a card before finishing'); return; }
         var fSel = selIds();
-        var fCard = fSel.length === 1 ? fSel[0] : chooseDeclareDiscard(S.hands[me.uid]);
+        var fHand = S.hands[me.uid] || [];
+        var fCard = fSel.length === 1 ? fSel[0] : chooseDeclareDiscard(fHand);
         handleFinishWithCard(fCard);
         break;
       case 'declare':
-        if (!S || S.turn !== me.uid || S.stage !== 'discard') return;
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage !== 'discard') { toast('Draw a card before declaring'); return; }
         var di = declareInfo(S.hands[me.uid]), ok = di ? di.filter(function (e) { return e.valid; }) : [], pick = selIds()[0];
         var declCard = ok.some(function (e) { return e.id === pick; }) ? pick : (ok[0] && ok[0].id);
         var targetCard = pick != null ? pick : (declCard != null ? declCard : chooseDeclareDiscard(S.hands[me.uid]));
@@ -1446,27 +1664,38 @@
         break;
       case 'group': groupSelected(); break;
       case 'sort': sortBySuit(); break;
-      case 'auto': autoArrange(); break;
+      case 'auto':
+        autoArrange();
+        toast('Hand auto-arranged', true);
+        break;
       case 'drop':
+        if (Date.now() < dealUntil) { toast('Cards are being dealt'); return; }
+        if (!S || S.turn !== me.uid) { toast('Wait for your turn'); return; }
+        if (S.stage !== 'draw') { toast('You can only drop before drawing'); return; }
         if (!confirmDrop) { confirmDrop = true; renderRoom(); setTimeout(function () { if (confirmDrop) { confirmDrop = false; renderRoom(); } }, 3000); }
         else act({ type: 'drop' });
         break;
-      case 'kick': if (S) actAs(t.dataset.u, { type: 'kick' }); break;
+      case 'kick': if (S) actAs(el.dataset.u, { type: 'kick' }); break;
       case 'react': reactOpen = true; renderRoom(); break;
       case 'closereact': reactOpen = false; renderRoom(); break;
-      case 'emoji': react(t.dataset.e); break;
+      case 'emoji': react(el.dataset.e); break;
       case 'felt': felt = { emerald: 'crimson', crimson: 'midnight', midnight: 'emerald' }[felt]; lsSet('rr-felt', felt); renderRoom(); break;
       case 'dealer': dealerSay(QUIPS[Math.floor(Math.random() * QUIPS.length)]); dealerPlay('clap', 900); break;
       case 'mute': muted = !muted; lsSet('rr-muted', muted ? '1' : '0'); renderRoom(); break;
     }
-  });
+  }
+
   document.addEventListener('click', function (ev) {
-    if (suppressClick) return;
-    var g = ev.target.closest('.group.target');
-    if (g && !ev.target.closest('[data-card]') && selIds().length) moveSelectedTo(+g.dataset.g);
-    else if (g && ev.target.closest('[data-card]') && g.classList.contains('target')) {
-      /* clicking a card inside a target group while others are selected toggles that card instead */
+    if (didRealDrag) {
+      didRealDrag = false;
+      ev.preventDefault();
+      ev.stopPropagation();
+      return;
     }
+    if (Date.now() - lastTapHandledAt < 400) {
+      return;
+    }
+    handleTapOrAction(ev.target, ev);
   });
   document.addEventListener('change', function (ev) { if (ev.target.dataset && ev.target.dataset.a === 'timer') setRoom({ turnSecs: +ev.target.value }); });
   document.addEventListener('keydown', function (ev) {
@@ -1489,6 +1718,14 @@
     set code(v) { code = v; },
     get menuOpen() { return menuOpen; },
     set menuOpen(v) { menuOpen = v; },
+    get sel() { return sel; },
+    set sel(v) { sel = v; },
+    get dealUntil() { return dealUntil; },
+    set dealUntil(v) { dealUntil = v; },
+    get confirmWrongDeclareCard() { return confirmWrongDeclareCard; },
+    set confirmWrongDeclareCard(v) { confirmWrongDeclareCard = v; },
+    act: act,
+    toast: toast,
     renderRoom: renderRoom,
     renderTable: renderTable,
     fitHand: fitHand,

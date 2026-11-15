@@ -1,0 +1,17 @@
+{
+  "name": "Cards24 Rummy Room",
+  "short_name": "Cards24",
+  "description": "Thirteen-card multiplayer Indian Rummy",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#07130c",
+  "theme_color": "#07130c",
+  "icons": [
+    {
+      "src": "dealer.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

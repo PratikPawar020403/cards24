@@ -9,10 +9,10 @@
   --u: min(1dvh, 0.52dvw);
 
   --top-h: clamp(28px, 8dvh, 34px);
-  --cw: clamp(40px, 13.5dvh, 56px);   /* Center pile card width */
+  --cw: clamp(52px, 15.5dvh, 66px);   /* Center pile card width: >= 52px */
   --ch: calc(var(--cw) * 1.4);        /* Center pile card height */
-  --hcw: clamp(42px, 16dvh, 64px);    /* Hand card width (62px at 844x390) */
-  --hch: calc(var(--hcw) * 1.4);      /* Hand card height (87px at 844x390) */
+  --hcw: clamp(40px, 15.5dvh, 62px);  /* Hand card width */
+  --hch: calc(var(--hcw) * 1.4);      /* Hand card height */
 
   --font-display: 'Yatra One', 'Georgia', serif;
   --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -55,6 +55,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden !important;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
@@ -69,6 +71,7 @@ html, body {
   width: 100%;
   height: 100dvh;
   overflow: hidden !important;
+  touch-action: manipulation;
 }
 
 /* ---------- Typography & Buttons ---------- */
@@ -270,8 +273,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   align-items: flex-end;
   justify-content: space-between;
   gap: 4px;
-  height: clamp(48px, 21dvh, 66px);
-  max-height: 24dvh;
+  height: clamp(52px, 23dvh, 74px);
   position: relative;
   z-index: 5;
   overflow: visible;
@@ -296,7 +298,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   overflow: hidden;
 }
 .dealer-cell {
-  flex: 0 0 clamp(60px, 16dvh, 84px);
+  flex: 0 0 clamp(66px, 18dvh, 92px);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -308,7 +310,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 }
 .dealer-cell picture, .dealer-cell .dealer-img {
   height: 100%;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   object-fit: contain;
   object-position: bottom;
   display: block;
@@ -318,14 +321,14 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 }
 .dealer-nametag {
   position: absolute;
-  bottom: -2px;
+  bottom: 0px;
   background: linear-gradient(180deg, var(--gold-2), var(--gold));
   color: #231703;
   font-family: var(--font-card);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 99px;
   border: 1px solid #8a5d14;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
@@ -587,19 +590,21 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   width: 100%;
   display: flex;
   align-items: flex-end;
-  justify-content: center;
+  justify-content: safe center;
   gap: 6px;
   overflow-x: auto;
   overflow-y: visible;
   scrollbar-width: none;
-  padding: 4px 6px 2px;
+  padding: 2px 6px 1px;
   box-sizing: border-box;
-  min-height: calc(var(--hch) + 6px);
+  min-height: calc(var(--hch) + 18px);
 }
 .hand-cards::-webkit-scrollbar { display: none; }
 
 .group {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
   flex: 0 0 auto;
 }
@@ -612,14 +617,22 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   height: var(--hch);
   flex: 0 0 auto;
   cursor: grab;
+  touch-action: none;
 }
 .group .cards .card:not(:last-child) {
   margin-right: var(--card-overlap, -18px);
 }
+.group-tag-row {
+  height: 15px;
+  min-height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  width: 100%;
+}
 .group-meld-tag {
-  position: absolute;
-  top: -6px;
-  right: 1px;
+  position: static;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -629,10 +642,11 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
   background: rgba(10, 20, 16, 0.94);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 10;
+  z-index: 2;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  line-height: 13px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 .group-meld-tag.t3 { background: rgba(14, 66, 37, 0.94); color: #5fe39b; border: 1px solid #1c7d48; }
 .group-meld-tag.t2 { background: rgba(15, 49, 77, 0.94); color: #7cb9f8; border: 1px solid #1d5c94; }
@@ -847,7 +861,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 .rail {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 4px;
   height: 100%;
   overflow: hidden;
@@ -1097,87 +1111,108 @@ button[data-a="discard"]:not(:disabled):hover {
   height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: clamp(8px, 2dvw, 16px);
   align-items: center;
   max-width: 900px;
   margin: 0 auto;
-  padding: 10px;
+  padding: clamp(4px, 1.5dvh, 10px);
   box-sizing: border-box;
 }
 .brand h1 {
   font-family: var(--font-display);
-  font-size: clamp(24px, 7dvh, 44px);
+  font-size: clamp(20px, 6dvh, 38px);
   margin: 0;
   line-height: 1;
   color: var(--gold-2);
 }
-.brand p { color: var(--muted); margin: 6px 0 0; font-size: 12px; }
-.brand .suits { display: flex; gap: 8px; font-size: 20px; margin-bottom: 6px; }
+.brand p { color: var(--muted); margin: 3px 0 0; font-size: clamp(11px, 3dvh, 12.5px); }
+.brand .suits { display: flex; gap: 6px; font-size: 16px; margin-bottom: 2px; }
 .brand .suits span:nth-child(odd) { color: var(--ink); }
 .brand .suits span:nth-child(even) { color: #ff6b6b; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
-.field { display: grid; gap: 3px; margin-bottom: 8px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: clamp(6px, 2dvh, 12px); }
+.field { display: grid; gap: 2px; margin-bottom: clamp(4px, 1.5dvh, 8px); }
 .field label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .field input, .field select {
   background: #0a1612; border: 1px solid var(--line); color: var(--ink); border-radius: 8px;
-  padding: 6px 10px; font: inherit; width: 100%; min-height: 36px; box-sizing: border-box;
+  padding: 4px 8px; font: inherit; width: 100%; min-height: clamp(28px, 8.5dvh, 34px); box-sizing: border-box;
 }
-.field input.code { text-transform: uppercase; letter-spacing: .25em; font-family: var(--font-card); font-size: 18px; text-align: center; }
-.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.field input.code { text-transform: uppercase; letter-spacing: .25em; font-family: var(--font-card); font-size: clamp(15px, 4.5dvh, 18px); text-align: center; }
+.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .row > .grow { flex: 1 1 100px; min-width: 0; }
 
 .dealer-home {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 4px;
 }
 .dealer-home picture, .dealer-home .dealer-img {
-  width: 54px;
-  height: 54px;
+  width: clamp(38px, 11dvh, 52px);
+  height: clamp(38px, 11dvh, 52px);
   object-fit: contain;
 }
 .dealer-home .bubble {
   background: rgba(14, 29, 23, 0.95);
   border: 1px solid var(--gold);
   border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 11.5px;
-  max-width: 240px;
+  padding: 4px 8px;
+  font-size: 11px;
+  max-width: 250px;
 }
 
 .lobby {
   height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 12px;
-  padding: 8px 12px;
+  gap: clamp(6px, 1.5dvw, 12px);
+  padding: clamp(4px, 1.5dvh, 10px);
   max-width: 960px;
   margin: 0 auto;
   align-items: stretch;
   box-sizing: border-box;
 }
-.lobby .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; }
-.codebox { text-align: center; padding: 10px; }
-.codebox .code { font-family: var(--font-card); font-weight: 700; font-size: clamp(26px, 8dvh, 48px); letter-spacing: .2em; color: var(--gold-2); line-height: 1; padding-left: .2em; }
-.seats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.lobby .col { display: flex; flex-direction: column; gap: clamp(3px, 1dvh, 6px); min-height: 0; overflow-y: hidden; }
+.codebox { text-align: center; padding: clamp(2px, 1dvh, 6px); }
+.codebox .code { font-family: var(--font-card); font-weight: 700; font-size: clamp(18px, 6dvh, 34px); letter-spacing: .15em; color: var(--gold-2); line-height: 1; padding-left: .15em; }
+.seats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; }
 .seat {
-  background: var(--panel); border: 1px dashed var(--line); border-radius: 10px;
-  padding: 6px; min-height: 60px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 2px; text-align: center; min-width: 0; position: relative;
+  background: var(--panel); border: 1px dashed var(--line); border-radius: 8px;
+  padding: 2px 3px; min-height: clamp(32px, 11dvh, 50px); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px; text-align: center; min-width: 0; position: relative;
 }
 .seat.taken { border-style: solid; background: var(--panel-2); }
-.seat .nm { font-weight: 700; font-size: 11.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.seat .avatar { width: 28px; height: 28px; font-size: 13px; }
-.seat .x { position: absolute; top: 2px; right: 2px; min-height: 22px; min-width: 22px; padding: 0; }
-.modes { display: grid; gap: 6px; }
+.seat .nm { font-weight: 700; font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seat .avatar { width: 22px; height: 22px; font-size: 10.5px; }
+.seat .x { position: absolute; top: 1px; right: 1px; min-height: 18px; min-width: 18px; padding: 0; }
+.modes { display: grid; gap: 3px; }
 .mode {
   text-align: left; border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px;
-  padding: 6px 10px; min-height: 36px;
+  padding: clamp(2px, 0.8dvh, 5px) clamp(6px, 1.2dvw, 8px); min-height: clamp(24px, 7dvh, 32px);
 }
 .mode[aria-pressed="true"] { border-color: var(--gold); background: rgba(240, 177, 63, .12); }
-.mode b { display: block; font-size: 12px; }
+.mode b { display: block; font-size: 11.5px; }
 .mode span { color: var(--muted); font-size: 11px; }
+
+.dealer-home .dealer-nametag { display: none !important; }
+
+.pwa-hint {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 24, 19, 0.95);
+  border: 1px solid var(--gold);
+  color: var(--ink);
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  white-space: nowrap;
+}
 
 /* Portrait phone orientation prompt */
 .rotate {
