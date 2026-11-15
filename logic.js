@@ -146,6 +146,42 @@
     }
     var r2 = best(A, full, false), total = 0;
     for (var k = 0; k < A.n; k++) total += A.vals[k];
+
+    var bestPure = null, maxProtect = -1;
+    for (var b = 0; b < A.byLow.length; b++) {
+      var list = A.byLow[b];
+      for (var q = 0; q < list.length; q++) {
+        var g = list[q];
+        if (g.t === 3) {
+          var pVal = 0, gIds = [];
+          for (var i = 0; i < A.n; i++) {
+            if ((g.m >> i) & 1) {
+              pVal += A.vals[i];
+              gIds.push(A.hand[i]);
+            }
+          }
+          if (pVal > maxProtect || (pVal === maxProtect && bestPure && gIds.length > bestPure.ids.length)) {
+            maxProtect = pVal;
+            bestPure = { ids: gIds, type: 3, m: g.m };
+          }
+        }
+      }
+    }
+
+    if (bestPure) {
+      var leftover = [];
+      for (var j = 0; j < A.n; j++) {
+        if (!((bestPure.m >> j) & 1)) leftover.push(A.hand[j]);
+      }
+      return {
+        feasible: false,
+        valid: false,
+        penalty: Math.min(80, total - maxProtect),
+        groups: [{ ids: bestPure.ids, type: 3 }],
+        leftover: leftover
+      };
+    }
+
     return { feasible: false, valid: false, penalty: Math.min(80, total), groups: r2.groups, leftover: r2.leftover };
   }
 
