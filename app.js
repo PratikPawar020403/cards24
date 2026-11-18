@@ -291,7 +291,11 @@
       if (!isFullscreen()) {
         var docEl = document.documentElement;
         var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
-        if (req) req.call(docEl);
+        if (req) {
+          req.call(docEl);
+        } else {
+          toast("iPhone: Tap Share \u2192 'Add to Home Screen' and open from the icon before joining for full screen.", true);
+        }
       } else {
         var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
         if (ex) ex.call(document);
@@ -473,6 +477,13 @@
                     '<span class="rejoin-code">' + esc(resume) + '</span>' +
                   '</div>' +
                   '<button class="btn-home-rejoin" data-a="resume" data-code="' + esc(resume) + '">REJOIN</button>' +
+                '</div>'
+              ) : '') +
+
+              '<!-- iOS PWA Tip (Conditional) -->' +
+              ((typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) ? (
+                '<div class="ios-install-hint" style="margin-top:14px;padding:9px 12px;background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.22);border-radius:8px;font-size:11px;color:rgba(245,230,200,0.9);line-height:1.45;text-align:center;">' +
+                  '📲 <strong>iPhone Full Screen:</strong> Tap <strong>Share</strong> \u2192 <strong>Add to Home Screen</strong>, then always launch Cards24 from that icon before joining.' +
                 '</div>'
               ) : '') +
 
