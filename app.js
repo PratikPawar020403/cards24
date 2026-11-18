@@ -391,7 +391,6 @@
                 '<span class="brand-title">CARDS24</span>' +
                 '<span class="brand-suit">♦</span>' +
               '</div>' +
-              '<span class="hero-badge">ROYAL HAVELI SALON</span>' +
             '</div>' +
 
             '<div class="hero-content">' +
@@ -422,7 +421,7 @@
           '<div class="home-access-panel">' +
             '<div class="panel-inner">' +
               '<div class="panel-header">' +
-                '<h2 class="panel-title">ENTER THE SALON</h2>' +
+                '<h2 class="panel-title">ENTER THE TABLE</h2>' +
                 '<div class="panel-line"></div>' +
               '</div>' +
 
