@@ -357,7 +357,15 @@
     if (!db) {
       offline = true; db = MemDB();
     }
-    var sid = null; try { sid = sessionStorage.getItem('rr-uid'); if (!sid) { sid = 'u_' + rid(8); sessionStorage.setItem('rr-uid', sid); } } catch (e) { sid = 'u_' + rid(8); }
+    var sid = lsGet('rr-uid');
+    if (!sid) {
+      try { sid = sessionStorage.getItem('rr-uid'); } catch (e) { sid = null; }
+    }
+    if (!sid) {
+      sid = 'u_' + rid(8);
+    }
+    lsSet('rr-uid', sid);
+    try { sessionStorage.setItem('rr-uid', sid); } catch (e) {}
     me.uid = me.uid || sid; me.name = saved;
     var h = (location.hash || '').match(/^#r-([A-Z0-9]{4,6})$/);
     if (!h && me.name && lsGet('rr-auto') === '1') {
