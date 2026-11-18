@@ -1039,43 +1039,805 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   font-size: 12.5px;
 }
 
-/* ---------- Lobby Royal Styling ---------- */
+/* ==========================================================================
+   CARDS24 — Royal Haveli Salon Multiplayer Room Lobby
+   ========================================================================== */
 .lobby {
+  position: fixed;
+  inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
   box-sizing: border-box;
-  background: radial-gradient(ellipse at 50% 25%, #2a160c 0%, #150a05 50%, #070302 100%);
-  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 20%, #24140b 0%, #150a05 50%, #080402 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: env(safe-area-inset-top, 12px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 12px) env(safe-area-inset-left, 16px);
+  z-index: 10;
 }
-.lobby .col {
-  max-width: 440px;
+
+.lobby-inner {
+  width: 100%;
+  max-width: 960px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  margin: auto;
+  box-sizing: border-box;
 }
-.lobby .panel {
-  background: rgba(26, 14, 8, 0.85);
-  border: 1.5px solid rgba(200, 164, 82, 0.4);
+
+/* Header bar */
+.lobby-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(200, 164, 82, 0.2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.lobby-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lobby-brand-title {
+  font-family: var(--font-royal);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: linear-gradient(180deg, #fff7d6 0%, #f5d488 40%, #c8a452 80%, #8c631b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+.lobby-brand-sep {
+  color: rgba(200, 164, 82, 0.4);
+  font-size: 14px;
+}
+.lobby-brand-sub {
+  font-family: var(--font-royal);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--gold-antique);
+}
+.lobby-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lobby-nav-btn {
+  background: rgba(30, 16, 10, 0.7);
+  border: 1px solid rgba(200, 164, 82, 0.3);
+  color: #f8f4e6;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+.lobby-nav-btn:hover {
+  background: rgba(50, 26, 16, 0.9);
+  border-color: var(--gold-bright);
+}
+.lobby-nav-btn.btn-leave {
+  border-color: rgba(240, 82, 82, 0.35);
+  color: #ffb4b4;
+}
+.lobby-nav-btn.btn-leave:hover {
+  background: rgba(86, 20, 28, 0.6);
+  border-color: #f05252;
+}
+
+/* Dashboard Grid (2 columns) */
+.lobby-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.lobby-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Common Panel Styling */
+.lobby-panel {
+  background: rgba(26, 14, 8, 0.92);
+  border: 1.5px solid rgba(200, 164, 82, 0.35);
   border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245, 212, 136, 0.1);
+  box-sizing: border-box;
 }
-.lobby input, .lobby select {
+.panel-eyebrow {
+  font-family: var(--font-royal);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-antique);
+  text-transform: uppercase;
+}
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.players-count-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.players-count-chip {
+  font-family: var(--font-royal);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-bright);
+  background: rgba(200, 164, 82, 0.15);
+  border: 1px solid rgba(200, 164, 82, 0.35);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* Room Code Panel */
+.room-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 6px;
+}
+.room-code-badge {
+  flex: 1;
+  background: rgba(14, 7, 4, 0.85);
+  border: 1.5px solid rgba(200, 164, 82, 0.5);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+.room-code-val {
+  font-family: var(--font-royal);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: var(--gold-bright);
+  text-shadow: 0 0 12px rgba(245, 212, 136, 0.4);
+}
+.lobby-copy-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  font-family: var(--font-royal);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.room-code-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Seated Players Grid */
+.lobby-addbot-btn {
+  background: rgba(36, 20, 12, 0.85);
+  border: 1px solid rgba(200, 164, 82, 0.4);
+  color: var(--gold-bright);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+.lobby-addbot-btn:hover:not(:disabled) {
+  background: rgba(56, 30, 18, 0.95);
+  border-color: var(--gold-bright);
+  transform: translateY(-1px);
+}
+.lobby-addbot-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lobby-seats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.lobby-seat {
+  background: rgba(18, 10, 6, 0.75);
+  border: 1px solid rgba(200, 164, 82, 0.25);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+.lobby-seat.taken {
+  background: rgba(22, 12, 7, 0.88);
+  border-color: rgba(200, 164, 82, 0.35);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.lobby-seat.seat-me {
+  border-color: rgba(79, 208, 140, 0.5);
+  background: rgba(10, 24, 18, 0.7);
+}
+.lobby-seat.empty {
+  border: 1.5px dashed rgba(200, 164, 82, 0.2);
+  background: rgba(14, 7, 4, 0.35);
+}
+.lobby-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2d180c 0%, #170d06 100%);
+  border: 1.5px solid var(--gold-antique);
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.lobby-avatar .avatar-initial {
+  font-family: var(--font-royal);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold-bright);
+}
+.empty-avatar {
+  border: 1.5px dashed rgba(200, 164, 82, 0.3);
+  background: transparent;
+  color: rgba(200, 164, 82, 0.4);
+  box-shadow: none;
+}
+.lobby-player-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lobby-player-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f8f4e6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.empty-seat-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--gold-antique);
+  opacity: 0.7;
+}
+.empty-seat-desc {
+  font-size: 9.5px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+.lobby-player-pills {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.pill {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.pill.gold {
+  background: linear-gradient(135deg, #d49b38 0%, #8c631b 100%);
+  color: #fff;
+  border: 1px solid #f5d488;
+}
+.pill.ok {
+  background: #0e583f;
+  color: #a3f3cc;
+  border: 1px solid #1fa373;
+}
+.pill.bot {
+  background: #2b1a10;
+  color: #d4a343;
+  border: 1px solid #5a3c22;
+}
+.pill.bad {
+  background: #56141c;
+  color: #ffb4b4;
+  border: 1px solid #8e2531;
+}
+.btn-remove-player {
+  background: rgba(86, 20, 28, 0.4);
+  border: 1px solid rgba(240, 82, 82, 0.3);
+  color: #ff9c9c;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  cursor: pointer;
+  flex: 0 0 22px;
+  transition: all 0.15s ease;
+}
+.btn-remove-player:hover {
+  background: rgba(180, 30, 45, 0.85);
+  border-color: #ff5555;
+  color: #fff;
+}
+
+/* Deal CTA & Waiting Banner */
+.lobby-action-slot {
+  width: 100%;
+}
+.btn-deal-action {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff5cc 0%, #f5d488 20%, #d49b38 60%, #8c631b 100%);
+  border: 1.5px solid #fff5cc;
+  color: #1a0c04;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(212, 163, 67, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+.btn-deal-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(212, 163, 67, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.btn-deal-action:active {
+  transform: translateY(1px);
+}
+.deal-btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-25deg);
+  animation: shineSweep 3.5s ease-in-out infinite;
+}
+@keyframes shineSweep {
+  0% { left: -100%; }
+  35%, 100% { left: 160%; }
+}
+.deal-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.deal-btn-title {
+  font-family: var(--font-royal);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+}
+.deal-btn-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.lobby-status-banner {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(20, 11, 6, 0.8);
+  border: 1.5px dashed rgba(200, 164, 82, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.status-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 10px var(--gold-bright);
+  animation: pulseDot 1.8s ease-in-out infinite;
+  flex: 0 0 10px;
+}
+@keyframes pulseDot {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+.status-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.status-banner-title {
+  font-family: var(--font-royal);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--gold-bright);
+}
+.status-banner-sub {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Game Type Cards (Points, Pool 101, Pool 201) */
+.gametype-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gametype-panel .host-badge {
+  font-size: 9px;
+  color: var(--gold-antique);
+  opacity: 0.7;
+}
+.modes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mode-card {
+  width: 100%;
+  background: rgba(18, 10, 6, 0.75);
+  border: 1.5px solid rgba(200, 164, 82, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.mode-card:hover:not(:disabled) {
+  background: rgba(30, 16, 10, 0.9);
+  border-color: rgba(245, 212, 136, 0.6);
+  transform: translateY(-1px);
+}
+.mode-card.selected {
+  background: linear-gradient(135deg, rgba(14, 88, 63, 0.45) 0%, rgba(7, 42, 29, 0.75) 100%);
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 16px rgba(212, 163, 67, 0.22), inset 0 0 12px rgba(14, 88, 63, 0.35);
+}
+.mode-card:disabled {
+  cursor: default;
+}
+.mode-radio-box {
+  flex: 0 0 18px;
+  display: grid;
+  place-items: center;
+}
+.mode-radio-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(200, 164, 82, 0.4);
+  display: grid;
+  place-items: center;
+  transition: border-color 0.15s ease;
+}
+.mode-card.selected .mode-radio-circle {
+  border-color: var(--gold-bright);
+}
+.mode-radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.mode-card.selected .mode-radio-dot {
+  background: linear-gradient(135deg, #fcedb4 0%, #d49b38 100%);
+  box-shadow: 0 0 6px var(--gold-bright);
+  transform: scale(1);
+}
+.mode-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mode-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.mode-title {
+  font-family: var(--font-royal);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gold-bright);
+}
+.mode-tag {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(200, 164, 82, 0.15);
+  color: var(--gold-antique);
+  border: 1px solid rgba(200, 164, 82, 0.3);
+}
+.mode-card.selected .mode-tag {
+  background: rgba(62, 207, 142, 0.18);
+  color: #4fd08c;
+  border-color: rgba(62, 207, 142, 0.4);
+}
+.mode-blurb {
+  font-size: 11px;
+  color: #d1c1a9;
+  line-height: 1.35;
+}
+
+/* Settings Bar: Turn Timer & Felt Theme */
+.lobby-settings-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.lobby-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.setting-lbl {
+  font-family: var(--font-royal);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gold-antique);
+}
+.select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.select-wrap select {
+  width: 100%;
+  appearance: none;
+  background: #100804;
+  border: 1px solid rgba(200, 164, 82, 0.35);
+  color: #f8f4e6;
+  border-radius: 6px;
+  padding: 6px 26px 6px 10px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.select-wrap select:focus {
+  border-color: var(--gold-bright);
+}
+.select-arrow {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--gold-antique);
+}
+
+.lobby-theme-btn {
   background: #100804;
   border: 1px solid rgba(200, 164, 82, 0.35);
   color: #f8f4e6;
   border-radius: 6px;
   padding: 6px 10px;
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
+  font-size: 11px;
+  font-weight: 600;
+  min-height: 31px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-.lobby input:focus, .lobby select:focus {
+.lobby-theme-btn:hover {
   border-color: var(--gold-bright);
+  background: #1f1008;
+}
+.theme-swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-bright);
+  flex: 0 0 13px;
+}
+.theme-swatch.swatch-emerald {
+  background: radial-gradient(circle, #0e583f 40%, #042116 100%);
+}
+.theme-swatch.swatch-crimson {
+  background: radial-gradient(circle, #6b1822 40%, #25070b 100%);
+}
+.theme-swatch.swatch-midnight {
+  background: radial-gradient(circle, #1a3c68 40%, #071324 100%);
+}
+.theme-name {
+  font-family: var(--font-royal);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--gold-bright);
+}
+
+/* ==========================================================================
+   Responsive Adaptations for Lobby
+   ========================================================================== */
+
+/* Mobile Portrait Mode */
+@media (orientation: portrait), (max-width: 680px) {
+  .lobby {
+    align-items: flex-start;
+    padding: max(10px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom)) 10px;
+  }
+  .lobby-inner {
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+  }
+  .lobby-dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+  }
+  .lobby-seats-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 6px;
+  }
+  .lobby-panel {
+    padding: 10px 10px;
+  }
+}
+
+/* Compact Landscape Tuning (e.g. 640x360, 844x390) */
+@media (max-height: 420px) and (orientation: landscape) {
+  .lobby {
+    padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
+  .lobby-inner {
+    gap: 8px;
+  }
+  .lobby-header-bar {
+    padding: 2px 4px;
+  }
+  .lobby-brand-title {
+    font-size: 16px;
+  }
+  .lobby-brand-sub {
+    font-size: 10px;
+  }
+  .lobby-nav-btn {
+    padding: 3px 8px;
+    font-size: 10.5px;
+  }
+  .lobby-dashboard {
+    gap: 10px;
+  }
+  .lobby-col {
+    gap: 8px;
+  }
+  .lobby-panel {
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+  .room-code-row {
+    margin: 4px 0 3px;
+  }
+  .room-code-badge {
+    padding: 4px 8px;
+  }
+  .room-code-val {
+    font-size: 20px;
+  }
+  .lobby-copy-btn {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+  .room-code-hint {
+    font-size: 10px;
+  }
+  .panel-header-row {
+    margin-bottom: 6px;
+  }
+  .lobby-seats-grid {
+    gap: 5px;
+  }
+  .lobby-seat {
+    min-height: 36px;
+    padding: 3px 6px;
+    gap: 6px;
+  }
+  .lobby-avatar {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+  }
+  .lobby-avatar .avatar-initial {
+    font-size: 11px;
+  }
+  .lobby-player-name {
+    font-size: 11px;
+  }
+  .btn-deal-action {
+    min-height: 40px;
+  }
+  .deal-btn-title {
+    font-size: 12.5px;
+  }
+  .deal-btn-sub {
+    font-size: 9.5px;
+  }
+  .lobby-status-banner {
+    min-height: 40px;
+    padding: 6px 10px;
+  }
+  .mode-card {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .mode-title {
+    font-size: 11.5px;
+  }
+  .mode-blurb {
+    font-size: 9.5px;
+    line-height: 1.25;
+  }
+  .lobby-settings-bar {
+    gap: 6px;
+  }
+  .select-wrap select, .lobby-theme-btn {
+    padding: 4px 8px;
+    font-size: 10.5px;
+    min-height: 28px;
+  }
 }
 
 /* ==========================================================================
@@ -1640,23 +2402,6 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   }
 }
 
-/* Lobby Seats */
-.seats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.seat {
-  background: rgba(18, 10, 6, 0.7);
-  border: 1px solid rgba(200, 164, 82, 0.25);
-  border-radius: 8px;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 38px;
-}
-
 /* ---------- Rotate Device Orientation Screen ---------- */
 .rotate {
   display: none;
@@ -1706,12 +2451,10 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 .rotate { display: none; }
 @media (orientation: portrait) and (max-width: 900px) {
   body[data-view="table"] .rotate,
-  body[data-view="lobby"] .rotate,
-  body:has(.shell) .rotate,
-  body:has(.lobby) .rotate {
+  body:has(.shell) .rotate {
     display: flex;
   }
-  .shell, .lobby { display: none !important; }
+  .shell { display: none !important; }
 }
 
 /* ---------- Responsive Scaling for Tablets & Large Desktop ---------- */
@@ -1747,12 +2490,6 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
     pointer-events: none;
   }
   .pile-lbl { font-size: 9px; margin-top: 2px; }
-  .lobby { padding: 6px 10px; }
-  .lobby .panel { padding: 8px 10px; }
-  .lobby .col { gap: 6px; }
-  .lobby .seat { min-height: 28px; padding: 2px 6px; }
-  .seats { gap: 4px; }
-  .lobby .code { font-size: 20px; letter-spacing: 0.1em; }
 }
 
 /* ==========================================================================
@@ -3792,30 +4529,185 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
     var seats = '';
     for (var i = 0; i < 6; i++) {
       var p = ps[i];
-      seats += p
-        ? '<div class="seat taken">' + avatar(p.uid) + '<div class="nm">' + esc(p.name) + '</div><div class="row" style="gap:4px;justify-content:center">' +
-          (p.uid === room.hostId ? '<span class="pill gold">Host</span>' : '') + (p.bot ? '<span class="pill">Bot</span>' : '') + (!online(p) ? '<span class="pill bad">Away</span>' : '') + (p.uid === me.uid ? '<span class="pill ok">You</span>' : '') + '</div>' +
-          (host && p.uid !== me.uid ? '<button class="btn small ghost x icon-btn" data-a="remove" data-u="' + esc(p.uid) + '" aria-label="Remove ' + esc(p.name) + '">✕</button>' : '') + '</div>'
-        : '<div class="seat"><span style="color:var(--muted)">Open seat</span></div>';
+      if (p) {
+        var isMe = p.uid === me.uid;
+        var isRoomHost = p.uid === room.hostId;
+        var isOnline = online(p);
+        var initial = (p.name || 'P').trim().charAt(0).toUpperCase();
+        var sIdx = seatIdx(p.uid);
+        seats +=
+          '<div class="lobby-seat taken' + (isMe ? ' seat-me' : '') + '">' +
+            '<div class="lobby-avatar av' + sIdx + '">' +
+              '<span class="avatar-initial">' + esc(initial) + '</span>' +
+            '</div>' +
+            '<div class="lobby-player-info">' +
+              '<div class="lobby-player-name" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+              '<div class="lobby-player-pills">' +
+                (isRoomHost ? '<span class="pill gold">Host</span>' : '') +
+                (isMe ? '<span class="pill ok">You</span>' : '') +
+                (p.bot ? '<span class="pill bot">Bot</span>' : '') +
+                (!isOnline ? '<span class="pill bad">Away</span>' : '') +
+              '</div>' +
+            '</div>' +
+            (host && !isMe ? '<button class="btn-remove-player" data-a="remove" data-u="' + esc(p.uid) + '" aria-label="Remove ' + esc(p.name) + '" title="Remove player">✕</button>' : '') +
+          '</div>';
+      } else {
+        seats +=
+          '<div class="lobby-seat empty">' +
+            '<div class="lobby-avatar empty-avatar">' +
+              '<svg viewBox="0 0 24 24" class="empty-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">' +
+                '<path d="M12 5v14M5 12h14"/>' +
+              '</svg>' +
+            '</div>' +
+            '<div class="lobby-player-info">' +
+              '<div class="empty-seat-title">Open Seat</div>' +
+              '<div class="empty-seat-desc">Waiting for player</div>' +
+            '</div>' +
+          '</div>';
+      }
     }
+
     var modes = Object.keys(L.MODES).map(function (k) {
-      return '<button class="mode" data-a="mode" data-m="' + k + '" aria-pressed="' + (mode === k) + '" ' + (host ? '' : 'disabled') + '><b>' + L.MODES[k].label + '</b><span>' + L.MODES[k].blurb + '</span></button>';
+      var isSelected = mode === k;
+      var tag = k === 'points' ? 'CLASSIC' : (k === 'pool101' ? 'POOL 101' : 'POOL 201');
+      return (
+        '<button class="mode-card' + (isSelected ? ' selected' : '') + '" data-a="mode" data-m="' + k + '" role="radio" aria-checked="' + isSelected + '" aria-pressed="' + isSelected + '" ' + (host ? '' : 'disabled') + '>' +
+          '<div class="mode-radio-box">' +
+            '<div class="mode-radio-circle">' +
+              '<div class="mode-radio-dot"></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="mode-content">' +
+            '<div class="mode-title-row">' +
+              '<span class="mode-title">' + esc(L.MODES[k].label) + '</span>' +
+              '<span class="mode-tag">' + tag + '</span>' +
+            '</div>' +
+            '<div class="mode-blurb">' + esc(L.MODES[k].blurb) + '</div>' +
+          '</div>' +
+        '</button>'
+      );
     }).join('');
+
+    var ctaHTML = '';
+    if (host) {
+      if (ps.length < 2) {
+        ctaHTML =
+          '<div class="lobby-status-banner waiting">' +
+            '<span class="status-pulse-dot"></span>' +
+            '<div class="status-banner-text">' +
+              '<div class="status-banner-title">WAITING FOR A SECOND PLAYER</div>' +
+              '<div class="status-banner-sub">At least 2 players are required to deal cards</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        ctaHTML =
+          '<button class="btn-deal-action" data-a="start">' +
+            '<span class="deal-btn-shine"></span>' +
+            '<svg class="deal-btn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/>' +
+            '</svg>' +
+            '<div class="deal-btn-text">' +
+              '<span class="deal-btn-title">DEAL THE CARDS</span>' +
+              '<span class="deal-btn-sub">Start round with ' + ps.length + ' players</span>' +
+            '</div>' +
+          '</button>';
+      }
+    } else {
+      ctaHTML =
+        '<div class="lobby-status-banner waiting non-host">' +
+          '<span class="status-pulse-dot"></span>' +
+          '<div class="status-banner-text">' +
+            '<div class="status-banner-title">WAITING FOR HOST TO DEAL</div>' +
+            '<div class="status-banner-sub">The host will begin once all players are ready</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    var timerOptions = [20, 30, 45, 60, 0].map(function (n) {
+      return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>';
+    }).join('');
+
     $app.innerHTML =
-      '<div class="lobby"><div class="col">' +
-      '<div class="panel codebox"><div class="note" style="margin:0 0 4px">Room code. Share it with friends.</div><div class="code">' + esc(code) + '</div>' +
-      '<div class="row" style="justify-content:center;margin-top:8px"><button class="btn small" data-a="copy">Copy code</button><button class="btn small ghost" data-a="rules">How to play</button><button class="btn small ghost" data-a="leave">Leave</button></div></div>' +
-      '<div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>Players ' + ps.length + '/6</b>' +
-      (host ? '<button class="btn small" data-a="addbot" ' + (ps.length >= 6 ? 'disabled' : '') + '>Add bot</button>' : '') + '</div><div class="seats">' + seats + '</div></div></div>' +
-      '<div class="col">' + (host ? '<button class="btn gold" data-a="start" ' + (ps.length < 2 ? 'disabled' : '') + '>' + (ps.length < 2 ? 'Waiting for a second player' : 'Deal the cards') + '</button>'
-        : '<div class="panel" style="text-align:center;color:var(--muted)">Waiting for the host to deal.</div>') + '<div class="panel"><div class="note" style="margin:0 0 8px">Game type' + (host ? '' : ' (host chooses)') + '</div><div class="modes">' + modes + '</div>' +
-      '<div class="field" style="margin-top:10px"><label for="ts">Turn timer</label><select id="ts" data-a="timer" ' + (host ? '' : 'disabled') + '>' +
-      [20, 30, 45, 60, 0].map(function (n) { return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>'; }).join('') + '</select></div>' +
-      '<div class="row" style="margin-top:10px;gap:6px">' +
-      '<button class="btn small" data-a="deck" style="flex:1" title="Toggle deck colors">' + (deckStyle === 'four' ? '🎨 4-Colour' : '🎨 Classic Deck') + '</button>' +
-      '<button class="btn small" data-a="cardback" style="flex:1" title="Cycle card back">' + '🎴 Back: ' + backTheme.toUpperCase() + '</button>' +
-      '</div></div>' +
-      '</div></div>' + (rulesOpen ? rulesHTML() : '');
+      '<div class="lobby">' +
+        '<div class="lobby-inner">' +
+          '<header class="lobby-header-bar">' +
+            '<div class="lobby-brand-group">' +
+              '<span class="lobby-brand-title">CARDS24</span>' +
+              '<span class="lobby-brand-sep">|</span>' +
+              '<span class="lobby-brand-sub">TABLE LOBBY</span>' +
+            '</div>' +
+            '<div class="lobby-nav-actions">' +
+              '<button class="btn lobby-nav-btn" data-a="rules" title="How to play Indian Rummy">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' +
+                '<span>Rules</span>' +
+              '</button>' +
+              '<button class="btn lobby-nav-btn btn-leave" data-a="leave" title="Leave table">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+                '<span>Leave</span>' +
+              '</button>' +
+            '</div>' +
+          '</header>' +
+
+          '<div class="lobby-dashboard">' +
+            '<div class="lobby-col lobby-col-left">' +
+              '<div class="panel lobby-panel room-code-panel">' +
+                '<div class="panel-eyebrow">ROOM CODE · SHARE WITH FRIENDS</div>' +
+                '<div class="room-code-row">' +
+                  '<div class="room-code-badge">' +
+                    '<span class="room-code-val">' + esc(code) + '</span>' +
+                  '</div>' +
+                  '<button class="btn gold lobby-copy-btn" data-a="copy" title="Copy room link">' +
+                    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+                    '<span>Copy Code</span>' +
+                  '</button>' +
+                '</div>' +
+                '<div class="room-code-hint">Share this 4-letter code or invite link with friends to join your table.</div>' +
+              '</div>' +
+
+              '<div class="panel lobby-panel players-panel">' +
+                '<div class="panel-header-row">' +
+                  '<div class="players-count-box">' +
+                    '<span class="panel-eyebrow">SEATED PLAYERS</span>' +
+                    '<span class="players-count-chip">' + ps.length + ' / 6</span>' +
+                  '</div>' +
+                  (host ? '<button class="btn lobby-addbot-btn" data-a="addbot" ' + (ps.length >= 6 ? 'disabled' : '') + ' title="Add computer player">' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>' +
+                    '<span>Add Bot</span>' +
+                  '</button>' : '') +
+                '</div>' +
+                '<div class="lobby-seats-grid">' + seats + '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="lobby-col lobby-col-right">' +
+              '<div class="lobby-action-slot">' + ctaHTML + '</div>' +
+
+              '<div class="panel lobby-panel gametype-panel">' +
+                '<div class="panel-eyebrow">GAME TYPE ' + (host ? '' : '<span class="host-badge">(HOST CHOOSES)</span>') + '</div>' +
+                '<div class="modes-list" role="radiogroup" aria-label="Game Type">' + modes + '</div>' +
+
+                '<div class="lobby-settings-bar">' +
+                  '<div class="lobby-field timer-field">' +
+                    '<label for="ts" class="setting-lbl">TURN TIMER</label>' +
+                    '<div class="select-wrap">' +
+                      '<select id="ts" data-a="timer" ' + (host ? '' : 'disabled') + '>' + timerOptions + '</select>' +
+                      '<svg class="select-arrow" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="lobby-field theme-field">' +
+                    '<span class="setting-lbl">TABLE THEME</span>' +
+                    '<button class="btn lobby-theme-btn" data-a="felt" title="Toggle table felt color">' +
+                      '<span class="theme-swatch swatch-' + felt + '"></span>' +
+                      '<span class="theme-name">FELT: <b>' + felt.toUpperCase() + '</b></span>' +
+                    '</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+        '</div>' +
+      '</div>' + (rulesOpen ? rulesHTML() : '');
   }
 
   function msgFor() {
@@ -4741,7 +5633,13 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
       case 'leave': menuOpen = false; leaveRoom(); break;
       case 'addbot': addBot(); break;
       case 'remove': removePlayer(el.dataset.u); break;
-      case 'mode': setRoom({ mode: el.dataset.m }); break;
+      case 'mode':
+        if (room && el.dataset.m) {
+          room.mode = el.dataset.m;
+          renderLobby();
+        }
+        setRoom({ mode: el.dataset.m });
+        break;
       case 'start': startDeal(true); break;
       case 'next': startDeal(false); break;
       case 'lobby': backToLobby(); break;

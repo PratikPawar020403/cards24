@@ -838,30 +838,185 @@
     var seats = '';
     for (var i = 0; i < 6; i++) {
       var p = ps[i];
-      seats += p
-        ? '<div class="seat taken">' + avatar(p.uid) + '<div class="nm">' + esc(p.name) + '</div><div class="row" style="gap:4px;justify-content:center">' +
-          (p.uid === room.hostId ? '<span class="pill gold">Host</span>' : '') + (p.bot ? '<span class="pill">Bot</span>' : '') + (!online(p) ? '<span class="pill bad">Away</span>' : '') + (p.uid === me.uid ? '<span class="pill ok">You</span>' : '') + '</div>' +
-          (host && p.uid !== me.uid ? '<button class="btn small ghost x icon-btn" data-a="remove" data-u="' + esc(p.uid) + '" aria-label="Remove ' + esc(p.name) + '">✕</button>' : '') + '</div>'
-        : '<div class="seat"><span style="color:var(--muted)">Open seat</span></div>';
+      if (p) {
+        var isMe = p.uid === me.uid;
+        var isRoomHost = p.uid === room.hostId;
+        var isOnline = online(p);
+        var initial = (p.name || 'P').trim().charAt(0).toUpperCase();
+        var sIdx = seatIdx(p.uid);
+        seats +=
+          '<div class="lobby-seat taken' + (isMe ? ' seat-me' : '') + '">' +
+            '<div class="lobby-avatar av' + sIdx + '">' +
+              '<span class="avatar-initial">' + esc(initial) + '</span>' +
+            '</div>' +
+            '<div class="lobby-player-info">' +
+              '<div class="lobby-player-name" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+              '<div class="lobby-player-pills">' +
+                (isRoomHost ? '<span class="pill gold">Host</span>' : '') +
+                (isMe ? '<span class="pill ok">You</span>' : '') +
+                (p.bot ? '<span class="pill bot">Bot</span>' : '') +
+                (!isOnline ? '<span class="pill bad">Away</span>' : '') +
+              '</div>' +
+            '</div>' +
+            (host && !isMe ? '<button class="btn-remove-player" data-a="remove" data-u="' + esc(p.uid) + '" aria-label="Remove ' + esc(p.name) + '" title="Remove player">✕</button>' : '') +
+          '</div>';
+      } else {
+        seats +=
+          '<div class="lobby-seat empty">' +
+            '<div class="lobby-avatar empty-avatar">' +
+              '<svg viewBox="0 0 24 24" class="empty-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">' +
+                '<path d="M12 5v14M5 12h14"/>' +
+              '</svg>' +
+            '</div>' +
+            '<div class="lobby-player-info">' +
+              '<div class="empty-seat-title">Open Seat</div>' +
+              '<div class="empty-seat-desc">Waiting for player</div>' +
+            '</div>' +
+          '</div>';
+      }
     }
+
     var modes = Object.keys(L.MODES).map(function (k) {
-      return '<button class="mode" data-a="mode" data-m="' + k + '" aria-pressed="' + (mode === k) + '" ' + (host ? '' : 'disabled') + '><b>' + L.MODES[k].label + '</b><span>' + L.MODES[k].blurb + '</span></button>';
+      var isSelected = mode === k;
+      var tag = k === 'points' ? 'CLASSIC' : (k === 'pool101' ? 'POOL 101' : 'POOL 201');
+      return (
+        '<button class="mode-card' + (isSelected ? ' selected' : '') + '" data-a="mode" data-m="' + k + '" role="radio" aria-checked="' + isSelected + '" aria-pressed="' + isSelected + '" ' + (host ? '' : 'disabled') + '>' +
+          '<div class="mode-radio-box">' +
+            '<div class="mode-radio-circle">' +
+              '<div class="mode-radio-dot"></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="mode-content">' +
+            '<div class="mode-title-row">' +
+              '<span class="mode-title">' + esc(L.MODES[k].label) + '</span>' +
+              '<span class="mode-tag">' + tag + '</span>' +
+            '</div>' +
+            '<div class="mode-blurb">' + esc(L.MODES[k].blurb) + '</div>' +
+          '</div>' +
+        '</button>'
+      );
     }).join('');
+
+    var ctaHTML = '';
+    if (host) {
+      if (ps.length < 2) {
+        ctaHTML =
+          '<div class="lobby-status-banner waiting">' +
+            '<span class="status-pulse-dot"></span>' +
+            '<div class="status-banner-text">' +
+              '<div class="status-banner-title">WAITING FOR A SECOND PLAYER</div>' +
+              '<div class="status-banner-sub">At least 2 players are required to deal cards</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        ctaHTML =
+          '<button class="btn-deal-action" data-a="start">' +
+            '<span class="deal-btn-shine"></span>' +
+            '<svg class="deal-btn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z"/>' +
+            '</svg>' +
+            '<div class="deal-btn-text">' +
+              '<span class="deal-btn-title">DEAL THE CARDS</span>' +
+              '<span class="deal-btn-sub">Start round with ' + ps.length + ' players</span>' +
+            '</div>' +
+          '</button>';
+      }
+    } else {
+      ctaHTML =
+        '<div class="lobby-status-banner waiting non-host">' +
+          '<span class="status-pulse-dot"></span>' +
+          '<div class="status-banner-text">' +
+            '<div class="status-banner-title">WAITING FOR HOST TO DEAL</div>' +
+            '<div class="status-banner-sub">The host will begin once all players are ready</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    var timerOptions = [20, 30, 45, 60, 0].map(function (n) {
+      return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>';
+    }).join('');
+
     $app.innerHTML =
-      '<div class="lobby"><div class="col">' +
-      '<div class="panel codebox"><div class="note" style="margin:0 0 4px">Room code. Share it with friends.</div><div class="code">' + esc(code) + '</div>' +
-      '<div class="row" style="justify-content:center;margin-top:8px"><button class="btn small" data-a="copy">Copy code</button><button class="btn small ghost" data-a="rules">How to play</button><button class="btn small ghost" data-a="leave">Leave</button></div></div>' +
-      '<div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:8px"><b>Players ' + ps.length + '/6</b>' +
-      (host ? '<button class="btn small" data-a="addbot" ' + (ps.length >= 6 ? 'disabled' : '') + '>Add bot</button>' : '') + '</div><div class="seats">' + seats + '</div></div></div>' +
-      '<div class="col">' + (host ? '<button class="btn gold" data-a="start" ' + (ps.length < 2 ? 'disabled' : '') + '>' + (ps.length < 2 ? 'Waiting for a second player' : 'Deal the cards') + '</button>'
-        : '<div class="panel" style="text-align:center;color:var(--muted)">Waiting for the host to deal.</div>') + '<div class="panel"><div class="note" style="margin:0 0 8px">Game type' + (host ? '' : ' (host chooses)') + '</div><div class="modes">' + modes + '</div>' +
-      '<div class="field" style="margin-top:10px"><label for="ts">Turn timer</label><select id="ts" data-a="timer" ' + (host ? '' : 'disabled') + '>' +
-      [20, 30, 45, 60, 0].map(function (n) { return '<option value="' + n + '"' + ((room.turnSecs || 0) === n ? ' selected' : '') + '>' + (n ? n + ' seconds' : 'No timer') + '</option>'; }).join('') + '</select></div>' +
-      '<div class="row" style="margin-top:10px;gap:6px">' +
-      '<button class="btn small" data-a="deck" style="flex:1" title="Toggle deck colors">' + (deckStyle === 'four' ? '🎨 4-Colour' : '🎨 Classic Deck') + '</button>' +
-      '<button class="btn small" data-a="cardback" style="flex:1" title="Cycle card back">' + '🎴 Back: ' + backTheme.toUpperCase() + '</button>' +
-      '</div></div>' +
-      '</div></div>' + (rulesOpen ? rulesHTML() : '');
+      '<div class="lobby">' +
+        '<div class="lobby-inner">' +
+          '<header class="lobby-header-bar">' +
+            '<div class="lobby-brand-group">' +
+              '<span class="lobby-brand-title">CARDS24</span>' +
+              '<span class="lobby-brand-sep">|</span>' +
+              '<span class="lobby-brand-sub">TABLE LOBBY</span>' +
+            '</div>' +
+            '<div class="lobby-nav-actions">' +
+              '<button class="btn lobby-nav-btn" data-a="rules" title="How to play Indian Rummy">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' +
+                '<span>Rules</span>' +
+              '</button>' +
+              '<button class="btn lobby-nav-btn btn-leave" data-a="leave" title="Leave table">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+                '<span>Leave</span>' +
+              '</button>' +
+            '</div>' +
+          '</header>' +
+
+          '<div class="lobby-dashboard">' +
+            '<div class="lobby-col lobby-col-left">' +
+              '<div class="panel lobby-panel room-code-panel">' +
+                '<div class="panel-eyebrow">ROOM CODE · SHARE WITH FRIENDS</div>' +
+                '<div class="room-code-row">' +
+                  '<div class="room-code-badge">' +
+                    '<span class="room-code-val">' + esc(code) + '</span>' +
+                  '</div>' +
+                  '<button class="btn gold lobby-copy-btn" data-a="copy" title="Copy room link">' +
+                    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+                    '<span>Copy Code</span>' +
+                  '</button>' +
+                '</div>' +
+                '<div class="room-code-hint">Share this 4-letter code or invite link with friends to join your table.</div>' +
+              '</div>' +
+
+              '<div class="panel lobby-panel players-panel">' +
+                '<div class="panel-header-row">' +
+                  '<div class="players-count-box">' +
+                    '<span class="panel-eyebrow">SEATED PLAYERS</span>' +
+                    '<span class="players-count-chip">' + ps.length + ' / 6</span>' +
+                  '</div>' +
+                  (host ? '<button class="btn lobby-addbot-btn" data-a="addbot" ' + (ps.length >= 6 ? 'disabled' : '') + ' title="Add computer player">' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>' +
+                    '<span>Add Bot</span>' +
+                  '</button>' : '') +
+                '</div>' +
+                '<div class="lobby-seats-grid">' + seats + '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="lobby-col lobby-col-right">' +
+              '<div class="lobby-action-slot">' + ctaHTML + '</div>' +
+
+              '<div class="panel lobby-panel gametype-panel">' +
+                '<div class="panel-eyebrow">GAME TYPE ' + (host ? '' : '<span class="host-badge">(HOST CHOOSES)</span>') + '</div>' +
+                '<div class="modes-list" role="radiogroup" aria-label="Game Type">' + modes + '</div>' +
+
+                '<div class="lobby-settings-bar">' +
+                  '<div class="lobby-field timer-field">' +
+                    '<label for="ts" class="setting-lbl">TURN TIMER</label>' +
+                    '<div class="select-wrap">' +
+                      '<select id="ts" data-a="timer" ' + (host ? '' : 'disabled') + '>' + timerOptions + '</select>' +
+                      '<svg class="select-arrow" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="lobby-field theme-field">' +
+                    '<span class="setting-lbl">TABLE THEME</span>' +
+                    '<button class="btn lobby-theme-btn" data-a="felt" title="Toggle table felt color">' +
+                      '<span class="theme-swatch swatch-' + felt + '"></span>' +
+                      '<span class="theme-name">FELT: <b>' + felt.toUpperCase() + '</b></span>' +
+                    '</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+        '</div>' +
+      '</div>' + (rulesOpen ? rulesHTML() : '');
   }
 
   function msgFor() {
@@ -1787,7 +1942,13 @@
       case 'leave': menuOpen = false; leaveRoom(); break;
       case 'addbot': addBot(); break;
       case 'remove': removePlayer(el.dataset.u); break;
-      case 'mode': setRoom({ mode: el.dataset.m }); break;
+      case 'mode':
+        if (room && el.dataset.m) {
+          room.mode = el.dataset.m;
+          renderLobby();
+        }
+        setRoom({ mode: el.dataset.m });
+        break;
       case 'start': startDeal(true); break;
       case 'next': startDeal(false); break;
       case 'lobby': backToLobby(); break;
