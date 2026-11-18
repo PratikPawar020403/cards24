@@ -1035,24 +1035,7 @@
   function cardName(id) { var c = L.INFO[id]; return c.joker ? 'a Joker' : L.RANK_LBL[c.rank] + L.SUIT_SYM[c.suit] + '︎'; }
 
   /* ================= SVGs for Royal Haveli Theme ================= */
-  var SILHOUETTE_SVG = '<svg class="sil-icon" viewBox="0 0 24 24" width="22" height="22"><path fill="#f8f4e6" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-
-  var LOTUS_SVG = '<svg viewBox="0 0 54 54" class="lotus-glyph" width="46" height="46">' +
-    '<defs>' +
-      '<linearGradient id="pG1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fcedb4"/><stop offset="50%" stop-color="#d49b38"/><stop offset="100%" stop-color="#7a4a0c"/></linearGradient>' +
-      '<linearGradient id="pG2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e8b858"/><stop offset="60%" stop-color="#aa7220"/><stop offset="100%" stop-color="#4e2c05"/></linearGradient>' +
-    '</defs>' +
-    '<g transform="translate(27, 27)">' +
-      '<ellipse cx="0" cy="14" rx="20" ry="6" fill="rgba(0,0,0,0.5)"/>' +
-      '<path d="M0 0 C-18 -8, -24 -2, 0 16 C24 -2, 18 -8, 0 0" fill="url(#pG2)" opacity="0.85"/>' +
-      '<path d="M0 0 C-14 -16, -20 -10, 0 14 C20 -10, 14 -16, 0 0" fill="url(#pG2)"/>' +
-      '<path d="M0 0 C-12 -20, -14 -14, 0 12 C14 -14, 12 -20, 0 0" fill="url(#pG1)" transform="rotate(-30)"/>' +
-      '<path d="M0 0 C-12 -20, -14 -14, 0 12 C14 -14, 12 -20, 0 0" fill="url(#pG1)" transform="rotate(30)"/>' +
-      '<path d="M0 0 C-12 -22, -10 -16, 0 12 C10 -16, 12 -22, 0 0" fill="url(#pG1)"/>' +
-      '<circle cx="0" cy="2" r="5" fill="#fcedb4" stroke="#8a5612" stroke-width="1"/>' +
-      '<circle cx="0" cy="2" r="2.5" fill="#e2a028"/>' +
-    '</g>' +
-  '</svg>';
+  var SILHOUETTE_SVG = '<svg class="sil-icon" viewBox="0 0 24 24" width="22" height="22"><path fill="rgba(248,244,230,0.85)" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
 
   var TROPHY_SVG = '<svg viewBox="0 0 24 24" class="hdr-ico" width="20" height="20" fill="none" stroke="#e6c678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>';
   var GEAR_SVG = '<svg viewBox="0 0 24 24" class="hdr-ico" width="20" height="20" fill="none" stroke="#e6c678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
@@ -1094,7 +1077,7 @@
       : '<div class="seat-card-cnt out"><span class="cnt-lbl">OUT</span></div>';
 
     return '<div class="' + cls + '" data-u="' + esc(u) + '" data-slot="' + (slot || 'rim') + '">' +
-      (isTurn ? '<div class="turn-pointer">▼</div>' : '') +
+      (isTurn ? '<div class="turn-pointer"></div>' : '') +
       '<div class="chip-avatar-wrap">' +
         '<div class="avatar medallion">' +
           SILHOUETTE_SVG +
@@ -1102,7 +1085,7 @@
       '</div>' +
       '<div class="chip-name-pill">' +
         '<span class="chip-name">' + esc(shortName) + '</span>' +
-        (isBot ? '<span class="bot-glyph" title="Bot">🤖</span>' : '') +
+        (isBot ? '<span class="chip-bot-badge">BOT</span>' : '') +
         skipBtn +
       '</div>' +
       cardCntDisplay +
@@ -1228,10 +1211,12 @@
     }
 
     var canFinish = mineTurn && S.stage === 'discard';
-    var finishHTML = '<div class="pile finish-pile' + (canFinish ? ' actionable' : '') + '" data-a="finish" title="Finish Slot: Drop 14th card here to declare">' +
-      '<div class="lotus-slot-card' + (S.finish != null ? ' has-card' : '') + '">' +
-      (S.finish != null ? cardHTML(S.finish) : LOTUS_SVG) +
-      '</div></div>';
+    var finishHTML = (canFinish || S.finish != null) ?
+      '<div class="pile finish-pile' + (canFinish ? ' actionable' : '') + '" data-a="finish" title="Finish Slot: Drop card or tap to declare">' +
+        '<div class="finish-slot-card' + (S.finish != null ? ' has-card' : '') + '">' +
+          (S.finish != null ? cardHTML(S.finish) : '<div class="finish-drop-zone"><span class="finish-drop-lbl">FINISH</span></div>') +
+        '</div>' +
+      '</div>' : '';
 
     /* Bottom Action Bar */
     var actionGrid = '';
@@ -1270,7 +1255,7 @@
 
     var leaveModalHTML = leaveModalOpen ?
       '<div class="modal" data-a="cancelleave"><div class="sheet" style="max-width:380px;text-align:center;">' +
-      '<h3 style="color:var(--bad);margin-top:0;">⚠️ Leave Table?</h3>' +
+      '<h3 style="color:var(--bad);margin-top:0;">Leave Table?</h3>' +
       '<p style="font-size:13.5px;color:var(--ink);">You are currently in an active deal.</p>' +
       '<p style="font-size:12px;color:var(--muted);">Leaving mid-deal forfeits your hand and adds drop points (+' + (S.draws[me.uid] === 0 ? 20 : 40) + ' pts). Are you sure you want to leave?</p>' +
       '<div class="row" style="justify-content:center;gap:12px;margin-top:16px;">' +
@@ -1280,7 +1265,7 @@
 
     var wrongModalHTML = confirmWrongDeclareCard != null ?
       '<div class="modal" data-a="cancelwrong"><div class="sheet" style="max-width:390px;text-align:center;">' +
-      '<h3 style="color:var(--bad);margin-top:0;">⚠️ Invalid Hand — Wrong Declaration?</h3>' +
+      '<h3 style="color:var(--bad);margin-top:0;">Invalid Hand — Wrong Declaration?</h3>' +
       '<p style="font-size:13px;color:var(--ink);">Your 13 cards do not form a valid declaration (needs 1 pure sequence + 1 second sequence with 0 deadwood).</p>' +
       '<p style="font-size:12px;color:var(--muted);">In RajRummy rules, declaring an invalid hand carries an <b>80-point penalty</b>!</p>' +
       '<div class="row" style="justify-content:center;gap:12px;margin-top:16px;">' +
@@ -1292,13 +1277,12 @@
       '<div class="modal" data-a="closemenu"><div class="sheet menu-sheet">' +
       '<div class="menu-head"><h3>Table Menu</h3><button class="btn icon-btn small ghost" data-a="closemenu">✕</button></div>' +
       '<div class="menu-buttons">' +
-      '<button class="btn" data-a="scores">📊 Scores</button>' +
-      '<button class="btn" data-a="rules">📖 How to Play</button>' +
-      '<button class="btn" data-a="deck">🎨 Deck Style (' + (deckStyle === 'four' ? '4-Colour' : 'Classic') + ')</button>' +
-      '<button class="btn" data-a="cardback">🎴 Card Back (' + backTheme.toUpperCase() + ')</button>' +
-      '<button class="btn" data-a="felt">◐ Felt Color (' + felt + ')</button>' +
-      '<button class="btn" data-a="mute">' + (muted ? '🔇 Unmute Sound' : '🔊 Mute Sound') + '</button>' +
-      '<button class="btn danger" data-a="leave">🚪 Leave Table</button>' +
+      '<button class="btn" data-a="scores">Scoreboard</button>' +
+      '<button class="btn" data-a="rules">How to Play</button>' +
+      '<button class="btn" data-a="cardback">Card Back (' + backTheme.toUpperCase() + ')</button>' +
+      '<button class="btn" data-a="felt">Table Felt (' + felt.toUpperCase() + ')</button>' +
+      '<button class="btn" data-a="mute">' + (muted ? 'Unmute Sound' : 'Mute Sound') + '</button>' +
+      '<button class="btn danger" data-a="leave">Leave Table</button>' +
       '</div></div></div>' : '';
 
     var topBarHTML =
@@ -1326,7 +1310,6 @@
           '<button class="btn icon-btn hdr-btn" data-a="fullscreen" aria-label="Toggle Fullscreen" title="Full Screen">' +
             (isFullscreen() ? EXIT_FULLSCREEN_SVG : FULLSCREEN_SVG) +
           '</button>' +
-          '<button class="btn icon-btn hdr-btn react-btn" data-a="react" aria-label="Reactions" title="Reactions">😀</button>' +
         '</div>' +
       '</header>';
 
@@ -1376,16 +1359,18 @@
         '<!-- Main Player Hand (Bottom) -->' +
         '<div class="hand-lane">' +
           '<div class="hand-header-bar">' +
-            '<div class="player-identity-tag me ' + (mineTurn ? 'turn' : '') + '">' +
-              '<span class="player-tag-name">' + esc(myShortName) + '</span>' +
-              '<span class="player-tag-score">' + myTot + ' pts</span>' +
+            '<div class="hand-header-left">' +
+              '<div class="player-identity-tag me ' + (mineTurn ? 'turn' : '') + '">' +
+                '<span class="player-tag-name">' + esc(myShortName) + '</span>' +
+                '<span class="player-tag-score">' + myTot + ' pts</span>' +
+              '</div>' +
+              '<div class="hand-stats-pills">' +
+                '<span class="mpill ' + (stats.pure ? 'ok' : 'no') + '">Pure ' + Math.min(stats.pure, 1) + '/1</span>' +
+                '<span class="mpill ' + (stats.seqs >= 2 ? 'ok' : 'no') + '">Seq ' + Math.min(stats.seqs, 2) + '/2</span>' +
+                '<span class="mpill score-pill">Dead ' + stats.dead + '</span>' +
+              '</div>' +
             '</div>' +
-            '<div class="hand-stats-pills">' +
-              '<span class="mpill ' + (stats.pure ? 'ok' : 'no') + '">Pure ' + Math.min(stats.pure, 1) + '/1</span>' +
-              '<span class="mpill ' + (stats.seqs >= 2 ? 'ok' : 'no') + '">Seq ' + Math.min(stats.seqs, 2) + '/2</span>' +
-              '<span class="mpill score-pill">Dead ' + stats.dead + '</span>' +
-            '</div>' +
-            (msg[0] ? '<div class="status-turn-hint ' + (mineTurn ? 'mine' : '') + '">' + esc(msg[0]) + (msg[1] ? ' · ' + esc(msg[1]) : '') + '</div>' : '') +
+            (msg[0] ? '<div class="hand-header-sep"></div><div class="hand-header-right"><div class="status-turn-hint ' + (mineTurn ? 'mine' : '') + '">' + esc(msg[0]) + (msg[1] ? ' · ' + esc(msg[1]) : '') + '</div></div>' : '') +
           '</div>' +
           '<div class="hand-cards" id="hand">' + handHTML + '</div>' +
         '</div>' +
@@ -1401,7 +1386,6 @@
         '</div>' +
       '</div>' +
       menuModalHTML +
-      (reactOpen ? '<div class="modal" data-a="closereact"><div class="sheet" style="width:auto"><div class="emoji-row">' + ['👏', '🔥', '😅', '👑', '♠️', '🎉'].map(function (e) { return '<button data-a="emoji" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div></div></div>' : '') +
       (S.phase === 'ended' && dismissed !== S.round + ':' + (S.result.winner) ? resultHTML() : '') +
       (scoresOpen ? scoresHTML() : '') + (rulesOpen ? rulesHTML() : '') + leaveModalHTML + wrongModalHTML;
 
@@ -1522,7 +1506,7 @@
     if (titleTimer) return;
     var flag = false;
     titleTimer = setInterval(function () {
-      document.title = flag ? '🔴 YOUR TURN! - Rummy Room' : '🃏 Draw / Discard - Rummy Room';
+      document.title = flag ? 'YOUR TURN! - Cards24' : 'Cards24 - Indian Rummy';
       flag = !flag;
     }, 750);
   }

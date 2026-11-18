@@ -330,7 +330,6 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 .hdr-btn:hover { border-color: var(--gold-bright); transform: scale(1.05); }
 .hdr-btn:active { transform: scale(0.95); }
-.hdr-btn.react-btn { font-size: 15px; }
 
 /* ---------- Table Area ---------- */
 .table-area {
@@ -355,13 +354,12 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   max-height: 100%;
   border-radius: clamp(34px, 16dvh, 90px);
   background:
-    radial-gradient(ellipse at 50% 42%, var(--felt-emerald-center) 0%, var(--felt-emerald-mid) 48%, var(--felt-emerald-edge) 82%, #02120c 100%);
-  border: clamp(10px, 2.5dvh, 18px) solid #1e1109;
+    radial-gradient(ellipse at 50% 40%, var(--felt-emerald-center) 0%, var(--felt-emerald-mid) 50%, var(--felt-emerald-edge) 86%, #02100a 100%);
+  border: clamp(8px, 2.2dvh, 16px) solid #180d07;
   box-shadow:
-    inset 0 0 0 2px #3d2315,
-    inset 0 0 0 3.5px var(--gold-antique),
-    inset 0 0 40px rgba(0, 0, 0, 0.75),
-    0 10px 30px rgba(0, 0, 0, 0.85);
+    inset 0 0 0 1px rgba(200, 164, 82, 0.45),
+    inset 0 0 30px rgba(0, 0, 0, 0.75),
+    0 8px 26px rgba(0, 0, 0, 0.85);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -369,31 +367,31 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   box-sizing: border-box;
 }
 
-/* Subtle Indian Floral Creeper Inlay along table rim */
+/* Subtle Inlay Accent along table rim */
 .felt-creeper-border {
   position: absolute;
   inset: clamp(4px, 1.2dvh, 8px);
   border-radius: clamp(26px, 14dvh, 78px);
-  border: 1px dashed rgba(200, 164, 82, 0.22);
+  border: 1px solid rgba(200, 164, 82, 0.14);
   pointer-events: none;
   z-index: 1;
 }
 
-/* Corner Filigree Ornaments in Mahogany Wood Rim */
+/* Subtle Corner Accents in Mahogany Wood Rim */
 .table-filigree {
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.14;
   z-index: 2;
   border-color: var(--gold-antique);
   border-style: solid;
 }
-.table-filigree.corner-tl { top: 6px; left: 6px; border-width: 1.5px 0 0 1.5px; border-radius: 8px 0 0 0; }
-.table-filigree.corner-tr { top: 6px; right: 6px; border-width: 1.5px 1.5px 0 0; border-radius: 0 8px 0 0; }
-.table-filigree.corner-bl { bottom: 6px; left: 6px; border-width: 0 0 1.5px 1.5px; border-radius: 0 0 0 8px; }
-.table-filigree.corner-br { bottom: 6px; right: 6px; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 8px 0; }
+.table-filigree.corner-tl { top: 5px; left: 5px; border-width: 1px 0 0 1px; border-radius: 6px 0 0 0; }
+.table-filigree.corner-tr { top: 5px; right: 5px; border-width: 1px 1px 0 0; border-radius: 0 6px 0 0; }
+.table-filigree.corner-bl { bottom: 5px; left: 5px; border-width: 0 0 1px 1px; border-radius: 0 0 0 6px; }
+.table-filigree.corner-br { bottom: 5px; right: 5px; border-width: 0 1px 1px 0; border-radius: 0 0 6px 0; }
 
 /* Felt Color Themes */
 .royal-table[data-felt="crimson"] {
@@ -429,7 +427,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 .pos-north {
   left: 50%;
-  top: clamp(4px, 1.5dvh, 12px);
+  top: clamp(2px, 0.8dvh, 8px);
   transform: translateX(-50%);
 }
 .pos-northEast {
@@ -454,12 +452,12 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   position: relative;
 }
 .avatar.medallion {
-  width: clamp(38px, 10dvh, 50px);
-  height: clamp(38px, 10dvh, 50px);
+  width: clamp(34px, 8.5dvh, 46px);
+  height: clamp(34px, 8.5dvh, 46px);
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, #155e42 0%, #0d422f 60%, #06261a 100%);
-  border: 2px solid var(--gold-antique);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.4);
+  background: radial-gradient(circle at 40% 35%, #134e38 0%, #0c3826 60%, #062217 100%);
+  border: 1.5px solid rgba(200, 164, 82, 0.55);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.25);
   display: grid;
   place-items: center;
   transition: all .2s ease;
@@ -470,34 +468,36 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   display: block;
 }
 
-/* Turn Indicator: Glowing Halo Ring & Golden Pointer */
+/* Turn Indicator: Refined Halo Ring & Subtle Pointer */
 .seat-chip.turn .avatar.medallion {
   border-color: var(--gold-bright);
   box-shadow:
-    0 0 0 2.5px var(--gold-bright),
-    0 0 20px rgba(245, 212, 136, 0.8),
-    inset 0 0 8px rgba(245, 212, 136, 0.5);
-  animation: turnHaloPulse 1.6s ease-in-out infinite;
+    0 0 0 2px var(--gold-bright),
+    0 0 12px rgba(200, 164, 82, 0.5),
+    inset 0 0 4px rgba(245, 212, 136, 0.3);
+  animation: turnHaloPulse 1.8s ease-in-out infinite;
 }
 .turn-pointer {
   position: absolute;
-  top: -13px;
+  top: -9px;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--gold-bright);
-  font-size: 13px;
-  line-height: 1;
-  text-shadow: 0 0 8px rgba(245, 212, 136, 0.9);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--gold-bright);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
   animation: pointerFloat 1.2s ease-in-out infinite;
   pointer-events: none;
 }
 @keyframes turnHaloPulse {
-  0%, 100% { box-shadow: 0 0 0 2.5px var(--gold-bright), 0 0 14px rgba(245, 212, 136, 0.6); }
-  50% { box-shadow: 0 0 0 3px #fff, 0 0 24px rgba(245, 212, 136, 0.95); }
+  0%, 100% { box-shadow: 0 0 0 2px var(--gold-bright), 0 0 10px rgba(200, 164, 82, 0.45); }
+  50% { box-shadow: 0 0 0 2.5px #fff7d6, 0 0 16px rgba(245, 212, 136, 0.7); }
 }
 @keyframes pointerFloat {
   0%, 100% { transform: translate(-50%, 0); }
-  50% { transform: translate(-50%, -3px); }
+  50% { transform: translate(-50%, -2px); }
 }
 
 .seat-chip.out { opacity: 0.45; filter: grayscale(0.5); }
@@ -506,10 +506,10 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 /* Player Name Pill */
 .chip-name-pill {
   margin-top: 3px;
-  background: #180d07;
-  border: 1px solid rgba(200, 164, 82, 0.5);
+  background: rgba(18, 10, 6, 0.9);
+  border: 1px solid rgba(200, 164, 82, 0.4);
   border-radius: 99px;
-  padding: 1px 7px;
+  padding: 1px 6px;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -526,7 +526,19 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   text-overflow: ellipsis;
   line-height: 1.1;
 }
-.bot-glyph { font-size: 10px; line-height: 1; }
+.chip-bot-badge {
+  font-family: var(--font-royal);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(200, 164, 82, 0.18);
+  color: var(--gold-bright);
+  border: 1px solid rgba(200, 164, 82, 0.38);
+  line-height: 1;
+  flex-shrink: 0;
+}
 
 /* Stacked Card Counter */
 .seat-card-cnt {
@@ -580,11 +592,11 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   margin-left: 2px;
 }
 
-/* ---------- Central Gameplay Area (Stock, Discard, Wild, Lotus) ---------- */
+/* ---------- Central Gameplay Area (Stock, Discard, Wild, Finish) ---------- */
 .center-core {
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 42%;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
@@ -595,7 +607,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 .piles-lane {
   display: flex;
-  gap: clamp(10px, 2.8dvw, 24px);
+  gap: clamp(12px, 3.2dvw, 26px);
   align-items: flex-end;
   justify-content: center;
 }
@@ -668,8 +680,8 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   height: var(--ch);
 }
 
-/* Lotus Flower Tray (Declare / Finish Slot) */
-.lotus-slot-card {
+/* Finish Slot (Only active when declaring or card dropped) */
+.finish-slot-card {
   width: var(--cw);
   height: var(--ch);
   display: flex;
@@ -678,20 +690,36 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   position: relative;
   transition: all .2s ease;
 }
-.lotus-glyph {
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
-  transition: transform .2s ease, filter .2s ease;
+.finish-drop-zone {
+  width: 100%;
+  height: 100%;
+  border: 1.5px dashed rgba(200, 164, 82, 0.55);
+  border-radius: calc(var(--cw) * 0.085);
+  background: rgba(18, 10, 6, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+}
+.finish-drop-lbl {
+  font-family: var(--font-royal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--gold-antique);
 }
 .finish-pile.actionable {
   cursor: pointer;
 }
-.finish-pile.actionable .lotus-glyph {
-  filter: drop-shadow(0 0 14px rgba(245, 212, 136, 0.85));
-  animation: lotusBreathe 1.8s ease-in-out infinite;
+.finish-pile.actionable .finish-drop-zone {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 14px rgba(245, 212, 136, 0.45);
+  background: rgba(45, 30, 12, 0.5);
+  animation: finishPulse 1.8s ease-in-out infinite;
 }
-@keyframes lotusBreathe {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(245, 212, 136, 0.6)); }
-  50% { transform: scale(1.06); filter: drop-shadow(0 0 18px rgba(245, 212, 136, 0.95)); }
+@keyframes finishPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(245, 212, 136, 0.35); }
+  50% { transform: scale(1.03); box-shadow: 0 0 18px rgba(245, 212, 136, 0.7); }
 }
 
 /* ---------- Main Player Hand (Bottom Felt) ---------- */
@@ -714,10 +742,28 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(6px, 1.6dvw, 12px);
   margin-bottom: 3px;
   pointer-events: none;
   user-select: none;
+  max-width: 96%;
+}
+.hand-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(4px, 1.2dvw, 7px);
+  flex-shrink: 0;
+}
+.hand-header-sep {
+  width: 1px;
+  height: 12px;
+  background: rgba(200, 164, 82, 0.35);
+  flex-shrink: 0;
+}
+.hand-header-right {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
 }
 .player-identity-tag {
   display: inline-flex;
@@ -778,11 +824,14 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 
 .status-turn-hint {
   font-family: var(--font-royal);
-  font-size: 11px;
+  font-size: clamp(9.5px, 2.5dvh, 11px);
   font-weight: 700;
-  color: #e2ceaa;
+  color: #d6be96;
   letter-spacing: 0.04em;
   text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .status-turn-hint.mine {
   color: var(--gold-bright);
@@ -841,8 +890,8 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 
 /* Group Tags Underneath Cards */
 .group-tag-row {
-  height: 14px;
-  min-height: 14px;
+  height: 12px;
+  min-height: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -851,21 +900,25 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 .group-meld-tag {
   font-family: var(--font-royal);
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 0 5px;
+  border-radius: 2px;
   white-space: nowrap;
-  line-height: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  line-height: 11px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
-.group-meld-tag.t3 { background: rgba(14, 66, 37, 0.94); color: #5fe39b; border: 1px solid #1c7d48; }
-.group-meld-tag.t2 { background: rgba(15, 49, 77, 0.94); color: #7cb9f8; border: 1px solid #1d5c94; }
-.group-meld-tag.t1 { background: rgba(63, 45, 8, 0.94); color: #f5d488; border: 1px solid #9c7015; }
-.group-meld-tag.t0 { background: rgba(36, 42, 38, 0.94); color: #b4c7bc; border: 1px solid rgba(255, 255, 255, 0.16); }
+.group-meld-tag.t3 { background: rgba(14, 66, 37, 0.85); color: #5fe39b; border: 1px solid rgba(28, 125, 72, 0.6); }
+.group-meld-tag.t2 { background: rgba(15, 49, 77, 0.85); color: #7cb9f8; border: 1px solid rgba(29, 92, 148, 0.6); }
+.group-meld-tag.t1 { background: rgba(63, 45, 8, 0.85); color: #f5d488; border: 1px solid rgba(156, 112, 21, 0.6); }
+.group-meld-tag.t0 {
+  background: rgba(24, 12, 10, 0.75);
+  color: rgba(220, 180, 170, 0.7);
+  border: 1px solid rgba(200, 164, 82, 0.2);
+}
 
 .group.target .cards {
   outline: 2px dashed var(--gold-antique);
@@ -982,6 +1035,12 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   text-shadow: 0 1px 0 rgba(255,255,255,0.7);
   box-shadow: 0 0 18px rgba(230, 185, 75, 0.65), 0 3px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.7);
   padding: 0 clamp(14px, 2.5dvw, 26px);
+}
+.btn-declare:disabled {
+  opacity: 0.32;
+  box-shadow: none;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
 }
 .btn-declare.suggest {
   box-shadow: 0 0 0 2px #fff, 0 0 24px rgba(245, 212, 136, 0.95);
@@ -4726,24 +4785,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   function cardName(id) { var c = L.INFO[id]; return c.joker ? 'a Joker' : L.RANK_LBL[c.rank] + L.SUIT_SYM[c.suit] + '︎'; }
 
   /* ================= SVGs for Royal Haveli Theme ================= */
-  var SILHOUETTE_SVG = '<svg class="sil-icon" viewBox="0 0 24 24" width="22" height="22"><path fill="#f8f4e6" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-
-  var LOTUS_SVG = '<svg viewBox="0 0 54 54" class="lotus-glyph" width="46" height="46">' +
-    '<defs>' +
-      '<linearGradient id="pG1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fcedb4"/><stop offset="50%" stop-color="#d49b38"/><stop offset="100%" stop-color="#7a4a0c"/></linearGradient>' +
-      '<linearGradient id="pG2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e8b858"/><stop offset="60%" stop-color="#aa7220"/><stop offset="100%" stop-color="#4e2c05"/></linearGradient>' +
-    '</defs>' +
-    '<g transform="translate(27, 27)">' +
-      '<ellipse cx="0" cy="14" rx="20" ry="6" fill="rgba(0,0,0,0.5)"/>' +
-      '<path d="M0 0 C-18 -8, -24 -2, 0 16 C24 -2, 18 -8, 0 0" fill="url(#pG2)" opacity="0.85"/>' +
-      '<path d="M0 0 C-14 -16, -20 -10, 0 14 C20 -10, 14 -16, 0 0" fill="url(#pG2)"/>' +
-      '<path d="M0 0 C-12 -20, -14 -14, 0 12 C14 -14, 12 -20, 0 0" fill="url(#pG1)" transform="rotate(-30)"/>' +
-      '<path d="M0 0 C-12 -20, -14 -14, 0 12 C14 -14, 12 -20, 0 0" fill="url(#pG1)" transform="rotate(30)"/>' +
-      '<path d="M0 0 C-12 -22, -10 -16, 0 12 C10 -16, 12 -22, 0 0" fill="url(#pG1)"/>' +
-      '<circle cx="0" cy="2" r="5" fill="#fcedb4" stroke="#8a5612" stroke-width="1"/>' +
-      '<circle cx="0" cy="2" r="2.5" fill="#e2a028"/>' +
-    '</g>' +
-  '</svg>';
+  var SILHOUETTE_SVG = '<svg class="sil-icon" viewBox="0 0 24 24" width="22" height="22"><path fill="rgba(248,244,230,0.85)" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
 
   var TROPHY_SVG = '<svg viewBox="0 0 24 24" class="hdr-ico" width="20" height="20" fill="none" stroke="#e6c678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>';
   var GEAR_SVG = '<svg viewBox="0 0 24 24" class="hdr-ico" width="20" height="20" fill="none" stroke="#e6c678" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
@@ -4785,7 +4827,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
       : '<div class="seat-card-cnt out"><span class="cnt-lbl">OUT</span></div>';
 
     return '<div class="' + cls + '" data-u="' + esc(u) + '" data-slot="' + (slot || 'rim') + '">' +
-      (isTurn ? '<div class="turn-pointer">▼</div>' : '') +
+      (isTurn ? '<div class="turn-pointer"></div>' : '') +
       '<div class="chip-avatar-wrap">' +
         '<div class="avatar medallion">' +
           SILHOUETTE_SVG +
@@ -4793,7 +4835,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
       '</div>' +
       '<div class="chip-name-pill">' +
         '<span class="chip-name">' + esc(shortName) + '</span>' +
-        (isBot ? '<span class="bot-glyph" title="Bot">🤖</span>' : '') +
+        (isBot ? '<span class="chip-bot-badge">BOT</span>' : '') +
         skipBtn +
       '</div>' +
       cardCntDisplay +
@@ -4919,10 +4961,12 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
     }
 
     var canFinish = mineTurn && S.stage === 'discard';
-    var finishHTML = '<div class="pile finish-pile' + (canFinish ? ' actionable' : '') + '" data-a="finish" title="Finish Slot: Drop 14th card here to declare">' +
-      '<div class="lotus-slot-card' + (S.finish != null ? ' has-card' : '') + '">' +
-      (S.finish != null ? cardHTML(S.finish) : LOTUS_SVG) +
-      '</div></div>';
+    var finishHTML = (canFinish || S.finish != null) ?
+      '<div class="pile finish-pile' + (canFinish ? ' actionable' : '') + '" data-a="finish" title="Finish Slot: Drop card or tap to declare">' +
+        '<div class="finish-slot-card' + (S.finish != null ? ' has-card' : '') + '">' +
+          (S.finish != null ? cardHTML(S.finish) : '<div class="finish-drop-zone"><span class="finish-drop-lbl">FINISH</span></div>') +
+        '</div>' +
+      '</div>' : '';
 
     /* Bottom Action Bar */
     var actionGrid = '';
@@ -4961,7 +5005,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 
     var leaveModalHTML = leaveModalOpen ?
       '<div class="modal" data-a="cancelleave"><div class="sheet" style="max-width:380px;text-align:center;">' +
-      '<h3 style="color:var(--bad);margin-top:0;">⚠️ Leave Table?</h3>' +
+      '<h3 style="color:var(--bad);margin-top:0;">Leave Table?</h3>' +
       '<p style="font-size:13.5px;color:var(--ink);">You are currently in an active deal.</p>' +
       '<p style="font-size:12px;color:var(--muted);">Leaving mid-deal forfeits your hand and adds drop points (+' + (S.draws[me.uid] === 0 ? 20 : 40) + ' pts). Are you sure you want to leave?</p>' +
       '<div class="row" style="justify-content:center;gap:12px;margin-top:16px;">' +
@@ -4971,7 +5015,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 
     var wrongModalHTML = confirmWrongDeclareCard != null ?
       '<div class="modal" data-a="cancelwrong"><div class="sheet" style="max-width:390px;text-align:center;">' +
-      '<h3 style="color:var(--bad);margin-top:0;">⚠️ Invalid Hand — Wrong Declaration?</h3>' +
+      '<h3 style="color:var(--bad);margin-top:0;">Invalid Hand — Wrong Declaration?</h3>' +
       '<p style="font-size:13px;color:var(--ink);">Your 13 cards do not form a valid declaration (needs 1 pure sequence + 1 second sequence with 0 deadwood).</p>' +
       '<p style="font-size:12px;color:var(--muted);">In RajRummy rules, declaring an invalid hand carries an <b>80-point penalty</b>!</p>' +
       '<div class="row" style="justify-content:center;gap:12px;margin-top:16px;">' +
@@ -4983,13 +5027,12 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
       '<div class="modal" data-a="closemenu"><div class="sheet menu-sheet">' +
       '<div class="menu-head"><h3>Table Menu</h3><button class="btn icon-btn small ghost" data-a="closemenu">✕</button></div>' +
       '<div class="menu-buttons">' +
-      '<button class="btn" data-a="scores">📊 Scores</button>' +
-      '<button class="btn" data-a="rules">📖 How to Play</button>' +
-      '<button class="btn" data-a="deck">🎨 Deck Style (' + (deckStyle === 'four' ? '4-Colour' : 'Classic') + ')</button>' +
-      '<button class="btn" data-a="cardback">🎴 Card Back (' + backTheme.toUpperCase() + ')</button>' +
-      '<button class="btn" data-a="felt">◐ Felt Color (' + felt + ')</button>' +
-      '<button class="btn" data-a="mute">' + (muted ? '🔇 Unmute Sound' : '🔊 Mute Sound') + '</button>' +
-      '<button class="btn danger" data-a="leave">🚪 Leave Table</button>' +
+      '<button class="btn" data-a="scores">Scoreboard</button>' +
+      '<button class="btn" data-a="rules">How to Play</button>' +
+      '<button class="btn" data-a="cardback">Card Back (' + backTheme.toUpperCase() + ')</button>' +
+      '<button class="btn" data-a="felt">Table Felt (' + felt.toUpperCase() + ')</button>' +
+      '<button class="btn" data-a="mute">' + (muted ? 'Unmute Sound' : 'Mute Sound') + '</button>' +
+      '<button class="btn danger" data-a="leave">Leave Table</button>' +
       '</div></div></div>' : '';
 
     var topBarHTML =
@@ -5017,7 +5060,6 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
           '<button class="btn icon-btn hdr-btn" data-a="fullscreen" aria-label="Toggle Fullscreen" title="Full Screen">' +
             (isFullscreen() ? EXIT_FULLSCREEN_SVG : FULLSCREEN_SVG) +
           '</button>' +
-          '<button class="btn icon-btn hdr-btn react-btn" data-a="react" aria-label="Reactions" title="Reactions">😀</button>' +
         '</div>' +
       '</header>';
 
@@ -5067,16 +5109,18 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
         '<!-- Main Player Hand (Bottom) -->' +
         '<div class="hand-lane">' +
           '<div class="hand-header-bar">' +
-            '<div class="player-identity-tag me ' + (mineTurn ? 'turn' : '') + '">' +
-              '<span class="player-tag-name">' + esc(myShortName) + '</span>' +
-              '<span class="player-tag-score">' + myTot + ' pts</span>' +
+            '<div class="hand-header-left">' +
+              '<div class="player-identity-tag me ' + (mineTurn ? 'turn' : '') + '">' +
+                '<span class="player-tag-name">' + esc(myShortName) + '</span>' +
+                '<span class="player-tag-score">' + myTot + ' pts</span>' +
+              '</div>' +
+              '<div class="hand-stats-pills">' +
+                '<span class="mpill ' + (stats.pure ? 'ok' : 'no') + '">Pure ' + Math.min(stats.pure, 1) + '/1</span>' +
+                '<span class="mpill ' + (stats.seqs >= 2 ? 'ok' : 'no') + '">Seq ' + Math.min(stats.seqs, 2) + '/2</span>' +
+                '<span class="mpill score-pill">Dead ' + stats.dead + '</span>' +
+              '</div>' +
             '</div>' +
-            '<div class="hand-stats-pills">' +
-              '<span class="mpill ' + (stats.pure ? 'ok' : 'no') + '">Pure ' + Math.min(stats.pure, 1) + '/1</span>' +
-              '<span class="mpill ' + (stats.seqs >= 2 ? 'ok' : 'no') + '">Seq ' + Math.min(stats.seqs, 2) + '/2</span>' +
-              '<span class="mpill score-pill">Dead ' + stats.dead + '</span>' +
-            '</div>' +
-            (msg[0] ? '<div class="status-turn-hint ' + (mineTurn ? 'mine' : '') + '">' + esc(msg[0]) + (msg[1] ? ' · ' + esc(msg[1]) : '') + '</div>' : '') +
+            (msg[0] ? '<div class="hand-header-sep"></div><div class="hand-header-right"><div class="status-turn-hint ' + (mineTurn ? 'mine' : '') + '">' + esc(msg[0]) + (msg[1] ? ' · ' + esc(msg[1]) : '') + '</div></div>' : '') +
           '</div>' +
           '<div class="hand-cards" id="hand">' + handHTML + '</div>' +
         '</div>' +
@@ -5092,7 +5136,6 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
         '</div>' +
       '</div>' +
       menuModalHTML +
-      (reactOpen ? '<div class="modal" data-a="closereact"><div class="sheet" style="width:auto"><div class="emoji-row">' + ['👏', '🔥', '😅', '👑', '♠️', '🎉'].map(function (e) { return '<button data-a="emoji" data-e="' + e + '">' + e + '</button>'; }).join('') + '</div></div></div>' : '') +
       (S.phase === 'ended' && dismissed !== S.round + ':' + (S.result.winner) ? resultHTML() : '') +
       (scoresOpen ? scoresHTML() : '') + (rulesOpen ? rulesHTML() : '') + leaveModalHTML + wrongModalHTML;
 
@@ -5213,7 +5256,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
     if (titleTimer) return;
     var flag = false;
     titleTimer = setInterval(function () {
-      document.title = flag ? '🔴 YOUR TURN! - Rummy Room' : '🃏 Draw / Discard - Rummy Room';
+      document.title = flag ? 'YOUR TURN! - Cards24' : 'Cards24 - Indian Rummy';
       flag = !flag;
     }, 750);
   }
