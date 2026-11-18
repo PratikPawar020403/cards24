@@ -375,23 +375,110 @@
   /* ================= home ================= */
   function renderHome(prefill) {
     unsubAll(); code = null; room = null; players = {}; S = null;
+    document.body.dataset.view = 'home';
     var resume = lsGet('rr-room');
+    var cardAce = cardHTML(0);
+    var cardKing = cardHTML(25);
     $app.innerHTML =
       '<div class="home">' +
-      '<div class="brand"><div class="suits"><span>♠</span><span>♥</span><span>♣</span><span>♦</span></div>' +
-      '<h1>Rummy Room</h1><p>Thirteen-card Indian rummy for two to six players. Make a room, send the code, and play on one table.</p>' +
-      dealerHTML({ staticText: 'Welcome to the table! Make a room and share the code.', home: true }) +
-      '<div class="row" style="margin-top:14px"><button class="btn small ghost" data-a="rules">How to play</button>' +
-      (offline ? '<span class="pill bad">Offline mode: this browser only</span>' : '<span class="pill ok">Live multiplayer</span>') + '</div></div>' +
-      '<div class="panel">' +
-      '<div class="field"><label for="nm">Your name</label><input id="nm" maxlength="14" autocomplete="off" value="' + esc(me.name) + '" placeholder="e.g. Aarav"></div>' +
-      '<div class="row"><button class="btn gold grow" data-a="create">Create room</button></div>' +
-      '<div class="divider">or join friends</div>' +
-      '<div class="row"><div class="field grow" style="margin:0"><input id="jc" class="code" maxlength="6" placeholder="CODE" autocomplete="off" aria-label="Room code" value="' + esc(prefill || '') + '"></div>' +
-      '<button class="btn" data-a="join">Join</button></div>' +
-      (resume ? '<div class="note">Last room: <b>' + esc(resume) + '</b> <button class="btn small ghost" data-a="resume" data-code="' + esc(resume) + '">Rejoin</button></div>' : '') +
-      (offline ? '<div class="note">Open this page from your claude.ai link with edit access to play across devices. Here, tabs of the same browser can join each other, and you can add bots.</div>' : '') +
-      '</div></div>';
+        '<div class="home-backdrop"></div>' +
+        '<div class="home-container">' +
+          '<!-- Left: Brand / Salon Hero Area -->' +
+          '<div class="home-hero">' +
+            '<div class="hero-brand-header">' +
+              '<div class="brand-cartouche">' +
+                '<span class="brand-suit">♠</span>' +
+                '<span class="brand-title">CARDS24</span>' +
+                '<span class="brand-suit">♦</span>' +
+              '</div>' +
+              '<span class="hero-badge">ROYAL HAVELI SALON</span>' +
+            '</div>' +
+
+            '<div class="hero-content">' +
+              '<h1 class="hero-title">Your Table Awaits</h1>' +
+              '<p class="hero-desc">Thirteen-card Indian Rummy in an exclusive private club. Create a room, share the code with friends, and take your seat at the table.</p>' +
+            '</div>' +
+
+            '<!-- Authentic Cards24 Mini Card Fan -->' +
+            '<div class="hero-card-fan" aria-hidden="true">' +
+              '<div class="hero-fan-card fan-back"><div class="card back"></div></div>' +
+              '<div class="hero-fan-card fan-ace">' + cardAce + '</div>' +
+              '<div class="hero-fan-card fan-king">' + cardKing + '</div>' +
+            '</div>' +
+
+            '<div class="hero-footer">' +
+              '<button class="btn-rules-pill" data-a="rules">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>' +
+                'How to Play' +
+              '</button>' +
+              '<div class="hero-mode-pill ' + (offline ? 'offline' : 'online') + '">' +
+                '<span class="mode-dot"></span>' +
+                '<span class="mode-lbl">' + (offline ? 'Local Browser Mode' : 'Live Multiplayer') + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<!-- Right: Unified Game Access Panel -->' +
+          '<div class="home-access-panel">' +
+            '<div class="panel-inner">' +
+              '<div class="panel-header">' +
+                '<h2 class="panel-title">ENTER THE SALON</h2>' +
+                '<div class="panel-line"></div>' +
+              '</div>' +
+
+              '<!-- Player Name Input -->' +
+              '<div class="field-block">' +
+                '<label class="field-label" for="nm">YOUR NAME</label>' +
+                '<div class="input-wrap">' +
+                  '<input id="nm" type="text" maxlength="14" autocomplete="off" spellcheck="false" value="' + esc(me.name) + '" placeholder="e.g. Aarav">' +
+                '</div>' +
+              '</div>' +
+
+              '<!-- Create Room Action -->' +
+              '<div class="action-block">' +
+                '<button class="btn-home-create" data-a="create">' +
+                  '<span class="btn-primary-title">CREATE ROOM</span>' +
+                  '<span class="btn-primary-sub">Start a new private 2–6 player table</span>' +
+                '</button>' +
+              '</div>' +
+
+              '<!-- Divider -->' +
+              '<div class="home-divider">' +
+                '<span class="div-line"></span>' +
+                '<span class="div-text">OR JOIN FRIENDS</span>' +
+                '<span class="div-line"></span>' +
+              '</div>' +
+
+              '<!-- Join Room Action -->' +
+              '<div class="field-block">' +
+                '<label class="field-label" for="jc">ENTER ROOM CODE</label>' +
+                '<div class="join-input-group">' +
+                  '<input id="jc" class="input-code" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="Room code" value="' + esc(prefill || '') + '">' +
+                  '<button class="btn-home-join" data-a="join">JOIN</button>' +
+                '</div>' +
+              '</div>' +
+
+              '<!-- Rejoin Previous Table (Conditional) -->' +
+              (resume ? (
+                '<div class="rejoin-card">' +
+                  '<div class="rejoin-details">' +
+                    '<span class="rejoin-label">PREVIOUS TABLE</span>' +
+                    '<span class="rejoin-code">' + esc(resume) + '</span>' +
+                  '</div>' +
+                  '<button class="btn-home-rejoin" data-a="resume" data-code="' + esc(resume) + '">REJOIN</button>' +
+                '</div>'
+              ) : '') +
+
+              '<!-- Offline Notice (Conditional) -->' +
+              (offline ? (
+                '<div class="offline-note">' +
+                  'Tabs in this browser can join each other, and you can add AI bots.' +
+                '</div>'
+              ) : '') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
   }
 
   function readName() {
@@ -747,6 +834,7 @@
   }
 
   function renderLobby() {
+    document.body.dataset.view = 'lobby';
     var ps = sortedPlayers(), host = isHost(), mode = room.mode || 'points';
     var seats = '';
     for (var i = 0; i < 6; i++) {
@@ -910,6 +998,7 @@
   }
 
   function renderTable() {
+    document.body.dataset.view = 'table';
     var inGame = S.order.indexOf(me.uid) >= 0, active = inGame && S.status[me.uid] === 'active';
     var mineTurn = S.phase === 'play' && S.turn === me.uid && active;
     var hand = inGame ? (S.hands[me.uid] || []) : [];

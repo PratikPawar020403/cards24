@@ -1033,8 +1033,8 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   font-size: 12.5px;
 }
 
-/* ---------- Lobby & Home Royal Styling ---------- */
-.home, .lobby {
+/* ---------- Lobby Royal Styling ---------- */
+.lobby {
   width: 100%;
   height: 100%;
   display: flex;
@@ -1045,26 +1045,20 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   background: radial-gradient(ellipse at 50% 25%, #2a160c 0%, #150a05 50%, #070302 100%);
   overflow: hidden;
 }
-.home .brand, .lobby .col {
+.lobby .col {
   max-width: 440px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.home h1 {
-  font-family: var(--font-royal);
-  font-size: clamp(24px, 6dvh, 32px);
-  color: var(--gold-bright);
-  margin: 0;
-}
-.home .panel, .lobby .panel {
+.lobby .panel {
   background: rgba(26, 14, 8, 0.85);
   border: 1.5px solid rgba(200, 164, 82, 0.4);
   border-radius: 12px;
   padding: 14px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.6);
 }
-.home input, .lobby input, .lobby select {
+.lobby input, .lobby select {
   background: #100804;
   border: 1px solid rgba(200, 164, 82, 0.35);
   color: #f8f4e6;
@@ -1074,8 +1068,570 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   font-size: 13px;
   outline: none;
 }
-.home input:focus, .lobby input:focus, .lobby select:focus {
+.lobby input:focus, .lobby select:focus {
   border-color: var(--gold-bright);
+}
+
+/* ==========================================================================
+   CARDS24 — Royal Haveli Salon Home / Landing Screen
+   ========================================================================== */
+.home {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 24px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 24px);
+  box-sizing: border-box;
+  background: radial-gradient(ellipse at 50% 20%, #241309 0%, #120904 45%, #070302 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  z-index: 10;
+}
+
+.home-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(200, 164, 82, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(14, 88, 63, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 50% 10%, rgba(189, 32, 42, 0.06) 0%, transparent 35%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: clamp(20px, 4vw, 48px);
+  align-items: center;
+  margin: auto;
+  z-index: 1;
+}
+
+/* ---------- Left: Hero Brand Area ---------- */
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2.2vh, 18px);
+  max-width: 480px;
+}
+
+.hero-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.brand-suit {
+  color: var(--burgundy-light);
+  font-size: 11px;
+}
+
+.hero-badge {
+  font-family: var(--font-royal);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--gold-antique);
+  background: rgba(200, 164, 82, 0.12);
+  border: 1px solid rgba(200, 164, 82, 0.3);
+  border-radius: 99px;
+  padding: 3px 9px;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-title {
+  font-family: var(--font-royal);
+  font-size: clamp(22px, 4.6vh, 34px);
+  font-weight: 800;
+  color: var(--gold-bright);
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.15;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.hero-desc {
+  font-family: var(--font-body);
+  font-size: clamp(12px, 2vh, 14px);
+  color: #d8c7ad;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Decorative OG Cards24 Fan */
+.hero-card-fan {
+  position: relative;
+  height: clamp(80px, 15vh, 108px);
+  display: flex;
+  align-items: flex-end;
+  margin: 4px 0 2px 12px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hero-fan-card {
+  position: absolute;
+  bottom: 0;
+  width: clamp(52px, 10vh, 70px);
+  height: clamp(74px, 14vh, 99px);
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.65));
+  transition: transform 0.3s ease;
+}
+
+.hero-fan-card .card {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+}
+
+.fan-back {
+  left: 0;
+  transform: rotate(-12deg) translateY(-2px);
+  z-index: 1;
+}
+
+.fan-ace {
+  left: 30px;
+  transform: rotate(0deg) translateY(-8px);
+  z-index: 2;
+}
+
+.fan-king {
+  left: 60px;
+  transform: rotate(12deg) translateY(-2px);
+  z-index: 3;
+}
+
+.hero-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-rules-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 16, 10, 0.75);
+  border: 1px solid rgba(200, 164, 82, 0.35);
+  border-radius: 99px;
+  padding: 6px 14px;
+  color: #f8f4e6;
+  font-family: var(--font-royal);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.btn-rules-pill:hover {
+  background: rgba(200, 164, 82, 0.2);
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+.hero-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hero-mode-pill.online {
+  background: rgba(14, 66, 37, 0.7);
+  border: 1px solid #1c7d48;
+  color: #5fe39b;
+}
+
+.hero-mode-pill.offline {
+  background: rgba(70, 20, 20, 0.7);
+  border: 1px solid #8c2828;
+  color: #ff9b9b;
+}
+
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* ---------- Right: Game Access Panel ---------- */
+.home-access-panel {
+  position: relative;
+  background: radial-gradient(ellipse at 50% 0%, #29150c 0%, #170b06 55%, #0e0603 100%);
+  border: 1.5px solid rgba(200, 164, 82, 0.45);
+  border-radius: 16px;
+  padding: clamp(14px, 3vh, 22px);
+  box-shadow:
+    inset 0 0 0 1px rgba(245, 212, 136, 0.15),
+    0 12px 36px rgba(0, 0, 0, 0.8),
+    0 0 24px rgba(200, 164, 82, 0.1);
+}
+
+.panel-inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vh, 14px);
+}
+
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-title {
+  font-family: var(--font-royal);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--gold-antique);
+  margin: 0;
+  text-align: center;
+}
+
+.panel-line {
+  width: 48px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold-antique), transparent);
+  margin: 0 auto;
+}
+
+.field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label {
+  font-family: var(--font-royal);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold-antique);
+  text-transform: uppercase;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  width: 100%;
+}
+
+.input-wrap input {
+  width: 100%;
+  height: clamp(38px, 6.5vh, 44px);
+  background: #0f0704;
+  border: 1.5px solid rgba(200, 164, 82, 0.35);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #f8f4e6;
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: all .2s ease;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+}
+
+.input-wrap input:focus {
+  border-color: var(--gold-bright);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 0 0 2px rgba(245, 212, 136, 0.25), 0 0 12px rgba(200, 164, 82, 0.3);
+}
+
+.input-wrap input::placeholder {
+  color: rgba(189, 166, 130, 0.5);
+}
+
+/* Create Room Button */
+.btn-home-create {
+  width: 100%;
+  min-height: clamp(42px, 7.5vh, 48px);
+  border: 1.5px solid #ffeaab;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f7dfa3 0%, #dfb55c 45%, #b88628 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 14px rgba(184, 134, 40, 0.45),
+    0 2px 4px rgba(0,0,0,0.5);
+  color: #1a0d04;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: all .15s ease;
+}
+
+.btn-home-create:hover {
+  background: linear-gradient(180deg, #fff0c7 0%, #ebc773 45%, #ca9735 100%);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 20px rgba(245, 212, 136, 0.6),
+    0 2px 6px rgba(0,0,0,0.6);
+  transform: translateY(-1px);
+}
+
+.btn-home-create:active {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.btn-primary-title {
+  font-family: var(--font-royal);
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+}
+
+.btn-primary-sub {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Divider */
+.home-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+}
+
+.div-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(200, 164, 82, 0.25);
+}
+
+.div-text {
+  font-family: var(--font-royal);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Join Row */
+.join-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-code {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-royal);
+  font-size: 15px !important;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.btn-home-join {
+  width: clamp(76px, 15vw, 92px);
+  min-height: clamp(38px, 6.5vh, 44px);
+  background: linear-gradient(180deg, #3d1f11 0%, #231109 100%);
+  border: 1.5px solid var(--gold-antique);
+  border-radius: 8px;
+  color: var(--gold-bright);
+  font-family: var(--font-royal);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all .15s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+.btn-home-join:hover {
+  background: linear-gradient(180deg, #522b18 0%, #32190d 100%);
+  border-color: var(--gold-bright);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(200, 164, 82, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-home-join:active {
+  transform: translateY(1px);
+}
+
+/* Rejoin Card */
+.rejoin-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(14, 7, 3, 0.7);
+  border: 1px dashed rgba(200, 164, 82, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.rejoin-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rejoin-label {
+  font-family: var(--font-royal);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.rejoin-code {
+  font-family: var(--font-royal);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--gold-bright);
+}
+
+.btn-home-rejoin {
+  background: rgba(200, 164, 82, 0.15);
+  border: 1px solid var(--gold-antique);
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: var(--gold-bright);
+  font-family: var(--font-royal);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.btn-home-rejoin:hover {
+  background: rgba(200, 164, 82, 0.3);
+  border-color: var(--gold-bright);
+  color: #fff;
+}
+
+.offline-note {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
+}
+
+/* Mobile Portrait Mode */
+@media (max-width: 680px), (orientation: portrait) {
+  .home {
+    align-items: flex-start;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  .home-container {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    gap: 16px;
+    margin: 0 auto;
+  }
+  .home-hero {
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+  .hero-brand-header {
+    justify-content: center;
+  }
+  .hero-card-fan {
+    justify-content: center;
+    margin: 2px 0 0 0;
+    height: 80px;
+  }
+  .hero-fan-card {
+    position: relative;
+    width: 52px;
+    height: 74px;
+  }
+  .fan-back { left: 0; }
+  .fan-ace { left: -14px; }
+  .fan-king { left: -28px; }
+  .hero-footer {
+    justify-content: center;
+  }
+}
+
+/* Compact Landscape (<= 320px height, e.g. 568x270, 640x270) */
+@media (max-height: 320px) and (orientation: landscape) {
+  .home {
+    padding: 6px 14px;
+  }
+  .home-container {
+    gap: 14px;
+    max-width: 780px;
+  }
+  .home-hero {
+    gap: 6px;
+  }
+  .hero-title {
+    font-size: 18px;
+  }
+  .hero-desc {
+    display: none;
+  }
+  .hero-card-fan {
+    height: 56px;
+    margin: 0;
+  }
+  .hero-fan-card {
+    width: 42px;
+    height: 58px;
+  }
+  .fan-ace { left: 20px; }
+  .fan-king { left: 40px; }
+  .home-access-panel {
+    padding: 10px 14px;
+  }
+  .panel-inner {
+    gap: 8px;
+  }
+  .input-wrap input {
+    height: 34px;
+    font-size: 13px;
+  }
+  .btn-home-create {
+    min-height: 36px;
+    padding: 4px 8px;
+  }
+  .btn-primary-title {
+    font-size: 11.5px;
+  }
+  .btn-primary-sub {
+    font-size: 9px;
+  }
+  .btn-home-join {
+    min-height: 34px;
+    font-size: 11px;
+  }
 }
 
 /* Lobby Seats */
@@ -1141,9 +1697,15 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
   90%, 100% { transform: rotate(0deg); }
 }
 
+.rotate { display: none; }
 @media (orientation: portrait) and (max-width: 900px) {
-  .rotate { display: flex; }
-  .shell, .lobby, .home { display: none !important; }
+  body[data-view="table"] .rotate,
+  body[data-view="lobby"] .rotate,
+  body:has(.shell) .rotate,
+  body:has(.lobby) .rotate {
+    display: flex;
+  }
+  .shell, .lobby { display: none !important; }
 }
 
 /* ---------- Responsive Scaling for Tablets & Large Desktop ---------- */
@@ -1161,7 +1723,7 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 
 /* Compact Landscape Tuning (e.g. 568x270, 640x270) */
-@media (max-height: 300px) {
+@media (max-height: 300px) and (orientation: landscape) {
   :root {
     --top-h: 26px;
     --action-h: 30px;
@@ -1179,8 +1741,8 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
     pointer-events: none;
   }
   .pile-lbl { font-size: 9px; margin-top: 2px; }
-  .home, .lobby { padding: 6px 10px; }
-  .home .panel, .lobby .panel { padding: 8px 10px; }
+  .lobby { padding: 6px 10px; }
+  .lobby .panel { padding: 8px 10px; }
   .lobby .col { gap: 6px; }
   .lobby .seat { min-height: 28px; padding: 2px 6px; }
   .seats { gap: 4px; }
