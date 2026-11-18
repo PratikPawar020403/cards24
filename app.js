@@ -330,7 +330,7 @@
   function roomRef() { return db.doc('rooms/' + code); }
   function stateRef() { return db.doc('rooms/' + code + '/game/state'); }
   function playersCol() { return db.collection('rooms/' + code + '/players'); }
-  function isHost() { return !!room && room.hostId === me.uid; }
+  function isHost() { return !!room && (room.hostId === me.uid || room.host === me.uid); }
   function sortedPlayers() { return Object.keys(players).map(function (k) { return players[k]; }).sort(function (a, b) { return a.joinedAt - b.joinedAt || (a.uid < b.uid ? -1 : 1); }); }
   function pname(u) { return (players[u] && players[u].name) || 'Player'; }
   function seatIdx(u) { var i = sortedPlayers().findIndex(function (p) { return p.uid === u; }); return i < 0 ? 0 : i % 6; }
@@ -601,9 +601,14 @@
     var round = fresh ? 0 : ((S && S.round) || 0) + 1;
     var deal = L.newDeal({ order: order, round: round, mode: room.mode, baseTotals: base, now: Date.now() });
     dismissed = ''; sel = {}; layout = []; layoutKey = '';
+    if (offline) { S = deal; renderRoom(); }
     enqueue(async function () { await stateRef().set(deal); await roomRef().update({ status: 'playing' }); });
   }
-  function backToLobby() { enqueue(async function () { await stateRef().delete(); await roomRef().update({ status: 'lobby' }); }); dismissed = ''; }
+  function backToLobby() {
+    if (offline) { if (room) room.status = 'lobby'; S = null; renderRoom(); }
+    enqueue(async function () { await stateRef().delete(); await roomRef().update({ status: 'lobby' }); });
+    dismissed = '';
+  }
 
   function act(a) {
     if (!S || Date.now() < dealUntil) {
@@ -1412,24 +1417,116 @@
 
   function resultHTML() {
     var R = S.result, host = isHost();
-    var order = S.order.slice().sort(function (a, b) { return R.points[a] - R.points[b]; });
+    if (!R) return '';
+
+    var winnerUid = R.winner;
+    var wPlayer = players[winnerUid] || { name: 'Player' };
+    var wIsBot = !!wPlayer.bot || /\(bot\)/i.test(wPlayer.name || '');
+    var wIsMe = (winnerUid === me.uid);
+    var wRawName = (wPlayer.name || 'Player').replace(/\s*\(bot\)/i, '').trim();
+    var wDisplayName = wIsMe ? 'You' : wRawName;
+    var wTitle = R.gameOver ? (wDisplayName + ' wins the game!') : (wDisplayName + ' won the deal');
+
+    var wrongNotice = R.wrongDeclarer ?
+      '<div class="results-alert bad">⚠️ ' + esc(pname(R.wrongDeclarer)) + ' made an invalid declaration (+80 penalty points).</div>' : '';
+    var elimNotice = (R.elim && R.elim.length) ?
+      '<div class="results-alert elim">Eliminated: ' + R.elim.map(function (u) { return esc(pname(u)); }).join(', ') + '</div>' : '';
+
+    var order = S.order.slice().sort(function (a, b) {
+      if (a === R.winner) return -1;
+      if (b === R.winner) return 1;
+      return (R.points[a] || 0) - (R.points[b] || 0);
+    });
+
     var rows = order.map(function (u, ri) {
-      var g = R.groups[u], gs = '';
+      var p = players[u] || { name: 'Player' };
+      var isBot = !!p.bot || /\(bot\)/i.test(p.name || '');
+      var isMe = (u === me.uid);
+      var isPlayerHost = (room && (room.host === u || room.hostId === u));
+      var rawName = (p.name || 'Player').replace(/\s*\(bot\)/i, '').trim();
+      var shortName = rawName.length > 9 ? rawName.slice(0, 8) + '…' : rawName;
+
+      var g = R.groups && R.groups[u];
+      var handHTML = '';
       if (g) {
-        gs = g.groups.map(function (ids) { return '<div class="g">' + ids.map(function (id) { return cardHTML(id, 'small'); }).join('') + '</div>'; }).join('');
-        if (g.leftover.length) gs += '<div class="g">' + g.leftover.map(function (id) { return cardHTML(id, 'small'); }).join('') + '</div>';
-      } else gs = '<span class="pill bad">Dropped</span>';
-      return '<div class="res-row' + (u === R.winner ? ' win' : '') + '" style="animation-delay:' + (0.15 + ri * 0.2).toFixed(2) + 's"><div class="nm">' + avatar(u) + '<span>' + esc(pname(u)) + '</span></div><div class="gs">' + gs + '</div><div class="num">+' + R.points[u] + '</div><div class="num">' + R.totals[u] + '</div></div>';
+        var groupCards = (g.groups || []).map(function (ids) {
+          return '<div class="res-card-group meld">' +
+            ids.map(function (id) { return cardHTML(id, 'small'); }).join('') +
+          '</div>';
+        }).join('');
+
+        var leftoverCards = (g.leftover && g.leftover.length) ?
+          '<div class="res-card-group leftover" title="Unmatched Cards">' +
+            g.leftover.map(function (id) { return cardHTML(id, 'small'); }).join('') +
+          '</div>' : '';
+
+        handHTML = '<div class="res-hand-lane">' + groupCards + leftoverCards + '</div>';
+      } else {
+        handHTML = '<div class="res-hand-lane"><span class="td-dropped-pill">Dropped</span></div>';
+      }
+
+      var pts = R.points[u] !== undefined ? R.points[u] : 0;
+      var tot = (R.totals && R.totals[u] !== undefined) ? R.totals[u] : pts;
+      var isWinner = (u === R.winner);
+
+      return '<div class="results-row' + (isWinner ? ' winner-row' : '') + '">' +
+        '<div class="td td-player">' +
+          '<div class="res-avatar medallion">' + SILHOUETTE_SVG + '</div>' +
+          '<div class="td-player-info">' +
+            '<div class="td-name-row">' +
+              '<span class="td-name" title="' + esc(rawName) + '">' + esc(shortName) + '</span>' +
+              (isBot ? '<span class="chip-bot-badge">BOT</span>' : '') +
+              (isPlayerHost ? '<span class="chip-host-badge">HOST</span>' : '') +
+              (isMe ? '<span class="chip-you-badge">YOU</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="td td-hand">' + handHTML + '</div>' +
+        '<div class="td td-deal"><span class="deal-pts' + (isWinner ? ' zero' : '') + '">' + (isWinner ? '0' : '+' + pts) + '</span></div>' +
+        '<div class="td td-total"><span class="total-pts">' + tot + '</span></div>' +
+      '</div>';
     }).join('');
-    var title = R.gameOver ? esc(pname(R.champion)) + ' wins the game' : (R.winner === me.uid ? 'You won the deal' : esc(pname(R.winner)) + ' won the deal');
-    var wrongNotice = R.wrongDeclarer ? '<p style="color:var(--bad);font-weight:600">⚠️ ' + esc(pname(R.wrongDeclarer)) + ' made an invalid declaration (+80 penalty points).</p>' : '';
-    var out = R.elim.length ? '<p>Out: ' + R.elim.map(function (u) { return esc(pname(u)); }).join(', ') + '</p>' : '';
+
     var btns = host
-      ? (R.gameOver ? '<button class="btn gold" data-a="lobby">New game</button>' : '<button class="btn gold" data-a="next">Next deal</button><button class="btn" data-a="lobby">Back to lobby</button>')
-      : '<span class="note">Waiting for the host.</span>';
-    return '<div class="modal"><div class="sheet"><h2>' + title + '</h2>' + wrongNotice + out +
-      '<div class="res-head"><span>Player</span><span>Final hand</span><span>Deal</span><span>Total</span></div>' + rows +
-      '<div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" data-a="closeres">View table</button>' + btns + '</div></div></div>';
+      ? (R.gameOver
+          ? '<button class="btn gold results-btn" data-a="lobby">New game</button>'
+          : '<button class="btn gold results-btn" data-a="next">Next deal</button><button class="btn results-btn" data-a="lobby">Back to lobby</button>')
+      : '<span class="results-waiting-note">Waiting for host…</span>';
+
+    return '<div class="modal results-modal">' +
+      '<div class="sheet results-sheet">' +
+        '<div class="results-header">' +
+          '<div class="results-kicker">DEAL COMPLETED · ROUND RESULTS</div>' +
+          '<div class="results-winner-banner">' +
+            '<div class="winner-trophy-wrap">' + TROPHY_SVG + '</div>' +
+            '<div class="winner-text-wrap">' +
+              '<div class="winner-title-row">' +
+                '<h2 class="winner-title">' + esc(wTitle) + '</h2>' +
+                (wIsBot ? '<span class="chip-bot-badge">BOT</span>' : '') +
+                (wIsMe ? '<span class="chip-you-badge">YOU</span>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          wrongNotice + elimNotice +
+        '</div>' +
+        '<div class="results-body">' +
+          '<div class="results-table">' +
+            '<div class="results-thead">' +
+              '<div class="th th-player">Player</div>' +
+              '<div class="th th-hand">Final hand</div>' +
+              '<div class="th th-deal">Deal</div>' +
+              '<div class="th th-total">Total</div>' +
+            '</div>' +
+            '<div class="results-tbody">' + rows + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="results-footer">' +
+          '<button class="btn ghost results-btn" data-a="closeres">View table</button>' +
+          '<button class="btn results-btn" data-a="scores">Scoreboard</button>' +
+          btns +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }
 
   function rulesHTML() {
@@ -2067,6 +2164,7 @@
   window.__RR = {
     get S() { return S; },
     set S(v) { S = v; },
+    get db() { return db; },
     get room() { return room; },
     set room(v) { room = v; },
     get players() { return players; },
@@ -2077,6 +2175,8 @@
     set code(v) { code = v; },
     get menuOpen() { return menuOpen; },
     set menuOpen(v) { menuOpen = v; },
+    get dismissed() { return dismissed; },
+    set dismissed(v) { dismissed = v; },
     get sel() { return sel; },
     set sel(v) { sel = v; },
     get dealUntil() { return dealUntil; },

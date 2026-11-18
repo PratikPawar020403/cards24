@@ -1093,6 +1093,419 @@ button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1p
 }
 
 /* ==========================================================================
+   CARDS24 — Round Results Modal & Table Redesign
+   ========================================================================== */
+.modal.results-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(4, 2, 1, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(6px, 2dvh, 16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.results-sheet {
+  width: 100%;
+  max-width: clamp(520px, 86vw, 760px);
+  max-height: clamp(280px, 92dvh, 560px);
+  background: radial-gradient(ellipse at 50% 10%, #24140a 0%, #160b06 65%, #0d0603 100%);
+  border: 1.5px solid var(--gold-antique);
+  border-radius: 14px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(200, 164, 82, 0.25),
+    0 0 30px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  color: #f8f4e6;
+  animation: modalEnter 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Results Header & Winner Presentation */
+.results-header {
+  flex: 0 0 auto;
+  padding: clamp(8px, 2dvh, 12px) clamp(12px, 2.5dvw, 20px) clamp(6px, 1.5dvh, 8px);
+  background: linear-gradient(180deg, rgba(32, 18, 10, 0.9) 0%, rgba(20, 10, 6, 0.7) 100%);
+  border-bottom: 1.5px solid rgba(200, 164, 82, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.results-kicker {
+  font-family: var(--font-royal);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-antique);
+  opacity: 0.9;
+  line-height: 1;
+}
+
+.results-winner-banner {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.6dvw, 12px);
+  margin-top: 1px;
+}
+
+.winner-trophy-wrap {
+  width: clamp(26px, 6dvh, 32px);
+  height: clamp(26px, 6dvh, 32px);
+  min-width: clamp(26px, 6dvh, 32px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, #3a250e 0%, #1a0e04 100%);
+  border: 1.5px solid var(--gold-bright);
+  box-shadow: 0 0 10px rgba(245, 212, 136, 0.5), inset 0 1px 2px rgba(255,255,255,0.4);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.winner-trophy-wrap svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--gold-bright);
+}
+
+.winner-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.winner-title {
+  margin: 0;
+  font-family: var(--font-royal);
+  font-size: clamp(13px, 3.4dvh, 16px);
+  font-weight: 800;
+  color: #fff9ea;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  line-height: 1.2;
+}
+
+.results-alert {
+  font-family: var(--font-royal);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-top: 3px;
+  line-height: 1.2;
+}
+.results-alert.bad {
+  background: rgba(60, 18, 16, 0.85);
+  border: 1px solid #9c2828;
+  color: #ffb4b4;
+}
+.results-alert.elim {
+  background: rgba(45, 25, 10, 0.85);
+  border: 1px solid rgba(200, 164, 82, 0.4);
+  color: #fce295;
+}
+
+/* Results Body & Scrollable Table */
+.results-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: clamp(4px, 1.4dvh, 8px) clamp(8px, 2dvw, 16px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 164, 82, 0.35) transparent;
+}
+.results-body::-webkit-scrollbar {
+  width: 4px;
+}
+.results-body::-webkit-scrollbar-thumb {
+  background: rgba(200, 164, 82, 0.35);
+  border-radius: 4px;
+}
+
+.results-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.results-thead {
+  display: grid;
+  grid-template-columns: minmax(115px, 140px) 1fr 48px 56px;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-royal);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-antique);
+  padding: 5px 8px;
+  background: rgba(14, 7, 4, 0.65);
+  border-radius: 5px;
+  border-bottom: 1px solid rgba(200, 164, 82, 0.25);
+  box-sizing: border-box;
+}
+
+.results-thead .th.th-deal, .results-thead .th.th-total {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.results-tbody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.results-row {
+  display: grid;
+  grid-template-columns: minmax(115px, 140px) 1fr 48px 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  background: rgba(20, 11, 7, 0.55);
+  border-radius: 5px;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+  transition: background .15s ease;
+}
+
+.results-row.winner-row {
+  background: linear-gradient(90deg, rgba(200, 164, 82, 0.16) 0%, rgba(20, 11, 7, 0.65) 100%);
+  border-left: 3px solid var(--gold-bright);
+  box-shadow: inset 0 0 12px rgba(200, 164, 82, 0.08);
+}
+
+.results-row .td {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.results-row .td.td-player {
+  gap: 5px;
+}
+.res-avatar.medallion {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #134e38 0%, #0c3826 60%, #062217 100%);
+  border: 1px solid rgba(200, 164, 82, 0.55);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.res-avatar.medallion svg {
+  width: 13px;
+  height: 13px;
+}
+
+.td-player-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.td-name-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.td-name {
+  font-family: var(--font-royal);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #f8f4e6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.results-row.winner-row .td-name {
+  color: var(--gold-bright);
+}
+
+.chip-host-badge {
+  font-family: var(--font-royal);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(40, 30, 15, 0.7);
+  color: #dfbd73;
+  border: 1px solid rgba(223, 189, 115, 0.4);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.chip-you-badge {
+  font-family: var(--font-royal);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(20, 60, 40, 0.7);
+  color: #6ee7b7;
+  border: 1px solid rgba(110, 231, 183, 0.4);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Horizontal Cards Lane within Hand Column */
+.res-hand-lane {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  padding: 1px 0;
+  width: 100%;
+}
+.res-hand-lane::-webkit-scrollbar { display: none; }
+
+.res-card-group {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  background: rgba(10, 24, 16, 0.45);
+  padding: 1px 3px;
+  border-radius: 3px;
+  border: 1px solid rgba(200, 164, 82, 0.22);
+  flex-shrink: 0;
+}
+.res-card-group.leftover {
+  background: rgba(45, 18, 14, 0.45);
+  border-color: rgba(180, 60, 50, 0.35);
+}
+
+/* Horizontal overlapping cards inside group */
+.res-card-group .card.small:not(:first-child) {
+  margin-left: calc(var(--cw, 25px) * -0.52);
+  box-shadow: -1px 0 3px rgba(0,0,0,0.4) !important;
+}
+
+.td-dropped-pill {
+  font-family: var(--font-royal);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 99px;
+  background: rgba(60, 20, 20, 0.7);
+  border: 1px solid rgba(180, 60, 60, 0.4);
+  color: #ff9b9b;
+}
+
+/* Deal Points & Running Total Columns */
+.results-row .td.td-deal, .results-row .td.td-total {
+  justify-content: flex-end;
+}
+
+.deal-pts {
+  font-family: var(--font-royal);
+  font-size: 11px;
+  font-weight: 800;
+  color: #ff9b9b;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.deal-pts.zero {
+  color: var(--gold-bright);
+}
+
+.total-pts {
+  font-family: var(--font-royal);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-antique);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Results Actions Footer */
+.results-footer {
+  flex: 0 0 auto;
+  padding: clamp(6px, 1.8dvh, 10px) clamp(12px, 2.5dvw, 20px);
+  background: linear-gradient(180deg, rgba(20, 10, 6, 0.7) 0%, rgba(14, 7, 4, 0.95) 100%);
+  border-top: 1.5px solid rgba(200, 164, 82, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(6px, 1.4dvw, 10px);
+  flex-wrap: wrap;
+}
+
+.results-btn {
+  height: clamp(26px, 6.2dvh, 32px);
+  padding: 0 clamp(10px, 1.8dvw, 16px);
+  font-size: clamp(10px, 2.4dvh, 11.5px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.results-waiting-note {
+  font-family: var(--font-royal);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--gold-antique);
+  font-style: italic;
+}
+
+@media (max-height: 420px) {
+  .results-sheet {
+    max-height: 94dvh;
+  }
+  .results-header {
+    padding: 6px 14px 5px;
+  }
+  .results-body {
+    padding: 3px 10px;
+  }
+  .results-thead {
+    padding: 4px 8px;
+    font-size: 8.5px;
+  }
+  .results-row {
+    padding: 2.5px 8px;
+  }
+  .results-footer {
+    padding: 6px 14px;
+  }
+  .results-btn {
+    height: 28px;
+    font-size: 10.5px;
+  }
+}
+
+/* Secondary Dialog Modals (Scoreboard, Rules, Menu, Leave) layered above Results */
+.modal[data-a="closescores"],
+.modal[data-a="closerules"],
+.modal[data-a="closemenu"],
+.modal[data-a="closeleave"],
+.modal[data-a="closewrong"] {
+  z-index: 130;
+}
+
+/* ==========================================================================
    CARDS24 — Royal Haveli Salon Multiplayer Room Lobby
    ========================================================================== */
 .lobby {
