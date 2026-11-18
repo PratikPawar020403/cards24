@@ -90,6 +90,9 @@ async function touchTap(page, selector, desc) {
       failedTotal++;
     }
 
+    // Wait for card flight animation into hand to complete
+    await page.waitForTimeout(500);
+
     // 2. Touch Tap Hand Card Selection
     let selCardId = null;
     try {

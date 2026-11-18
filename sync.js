@@ -11,7 +11,7 @@ const html = `<!doctype html><html><head><meta charset=utf8><meta name=viewport 
 <title>Rummy Room</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Sans:wght@400;500;700&family=Yatra+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Cinzel:wght@600;700;800;900&family=DM+Sans:wght@400;500;700&family=Marcellus&family=Playfair+Display:wght@700&family=Yatra+One&display=swap">
 <style>
 ${css}
 ${cardCss}
